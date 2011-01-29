@@ -1,0 +1,31 @@
+<html>
+	<script src="options.js"></script>
+	<script src="config.js"></script>
+	<script src="util.js"></script>
+	<script>
+	
+		// upgrade the CSS saved in local storage, if necessary
+		util.updateCssVersion();
+	
+		// handle messages from the front-end
+		chrome.extension.onRequest.addListener(
+			function(request, sender, sendResponse) {
+
+				console.log(sender.tab ?
+							"Received message from a content script: " + sender.tab.url :
+							"Received message from the extension");
+						
+				switch(request.method) {
+					case "getOptions":
+						sendResponse(options.getOptions());
+						break;
+						
+					default:
+						throw "Did not recognize the requested method: " + request.type;
+						break;						
+				}
+			}		
+		);
+  
+	</script>
+</html>
