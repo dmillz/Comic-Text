@@ -41,12 +41,16 @@ Changelog
 ---------
 January 27, 2011
 Version 1.0
-- Initial Release
+
+-Initial Release
 
 January 27, 2011
 Version 1.0.1
-- Fix to support Google Reader
+
+-Fix to support Google Reader
 
 January 29, 2011
-- More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
-- Various tweaks and minor improvements
+Version 1.0.2
+
+-More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
+-Various tweaks and minor improvements
