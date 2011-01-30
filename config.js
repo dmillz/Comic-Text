@@ -26,7 +26,6 @@ div.comic-text-popup {\n\
 	text-align: left;\n\
 	text-decoration: none;\n\
 	font-variant: normal;\n\
-	z-index: 99999999;\n\
 }",
 
 // version 1
@@ -73,4 +72,5 @@ div.comic-text-popup {\n\
 	text-transform: none;\n\
 	list-style: none;\n\
 	text-indent: 0;\n\
+	z-index: 99999999;\n\
 }" ];
