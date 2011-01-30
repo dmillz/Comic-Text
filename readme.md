@@ -16,7 +16,7 @@ What's wrong with Chrome's mouseover text tooltips?
 ---------------------------------------------------
 They don't last long enough to read the entirety of the mouseover title text on many popular web comics, such as [xkcd](xkcd.com). By default, Chrome's tooltips disappear after about 5 seconds; but with Comic Text installed, they will last as long as your mouse remains over the image. [Other people](http://www.google.com/support/forum/p/Chrome/thread?tid=4f641efdaeb3c585) have also [been annoyed by this behavior](http://code.google.com/p/chromium/issues/detail?id=1441).
 
-Does this extension work on websites other than xckd.com?
+Does this extension work on websites other than xkcd.com?
 ---------------------------------------------------------
 Yes! By default, the Comic Text will "just work" when browsing xkcd.com, and you may use the extension options to customize the styling of the popup, or to enable Comic Text on your other favorite sites. (Access the extension options by clicking [Wrench Icon] > Tools > Extensions, and then find the "Options" link under the Comic Text extension.)
 
@@ -36,3 +36,17 @@ Copyright & License
 Copyright (c) 2011 David Mills, 
 
 This work is released under the [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/)
+
+Changelog
+---------
+January 27, 2011
+Version 1.0
+- Initial Release
+
+January 27, 2011
+Version 1.0.1
+- Fix to support Google Reader
+
+January 29, 2011
+- More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
+- Various tweaks and minor improvements
