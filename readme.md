@@ -39,18 +39,16 @@ This work is released under the [Creative Commons Attribution 3.0 Unported Licen
 
 Changelog
 ---------
-January 27, 2011
-Version 1.0
+
+Version 1.0 (January 27, 2011)
 
 - Initial Release
 
-January 27, 2011
-Version 1.0.1
+Version 1.0.1 (January 27, 2011)
 
 - Fix to support Google Reader
 
-January 29, 2011
-Version 1.0.2
+Version 1.0.2 (January 29, 2011)
 
 - More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
 - Various tweaks and minor improvements
