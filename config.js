@@ -56,7 +56,7 @@ div.comic-text-popup {\n\
 	position: absolute;\n\
 	max-width: 300px;\n\
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#e4e5f0));\n\
-	padding: 3px;\n\
+	padding: 4px;\n\
 	font-size: 12px;\n\
 	font-family: 'Segoe UI', Calibri, Helvetica, Verdana, sans-serif;\n\
 	font-weight: normal;\n\
