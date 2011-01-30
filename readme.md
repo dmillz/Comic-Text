@@ -26,7 +26,7 @@ The extension works by modifying the HTML/CSS of any pages that are on the white
 
 The extension requires the "Your data on all websites" persmission so that it can modify the page you're browsing in this manner, but that's the only thing it does. It does not save any information (besides it's own options), nor does it communicate with the outside world. 
 
-Comic doesn't seem to work on &lt;my favorite site&gt;.
+Comic Text doesn't seem to work on &lt;my favorite site&gt;.
 -------------------------------------------------------
 If you find a bug, or just have a question, please [submit it as an issue](https://github.com/dmillz/Comic-Text/issues).
 
