@@ -101,19 +101,15 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 		}  
 	}
 
-	function processInsertion(node) {
-		$("img", node).each(function(index, image) {
-			processImage(image);
-		});
-	}
-
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
 		console.log("we're on the list!");
 		
 		// handle dynamic DOM insertions
 		$(document).bind('DOMNodeInserted', function(event) {
-			processInsertion(event.target);
+			$("img", event.target).each(function(index, image) {
+				processImage(image);
+			});
 		});
 		
 		// process the original document
