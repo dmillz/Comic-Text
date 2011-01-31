@@ -11,10 +11,6 @@
 		chrome.extension.onRequest.addListener(
 			function(request, sender, sendResponse) {
 
-				console.log(sender.tab ?
-							"Received message from a content script: " + sender.tab.url :
-							"Received message from the extension");
-						
 				switch(request.method) {
 					case "getOptions":
 						sendResponse(options.getOptions());
