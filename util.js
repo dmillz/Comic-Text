@@ -17,7 +17,7 @@ util.updateCssVersion = function() {
 	var userVersion = options.loadUserCssVersion();
 	console.log("User has CSS version " + userVersion);
 	console.log("Current CSS version is " + config.currentCssVersion);
-	if (isNaN(userVersion) || userVersion < config.currentCssVersion) {
+	if (isNaN(userVersion) || userVersion != config.currentCssVersion) {
 		console.log("Upgrading CSS version");
 		
 		// Don't overwrite CSS if we've previsouly saved a 
