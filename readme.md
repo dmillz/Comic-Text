@@ -53,6 +53,6 @@ Version 1.0.2 (January 29, 2011)
 - More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
 - Various tweaks and minor improvements
 
-Version 1.0.3 (January 30, 2011)
+Version 1.0.3/1.0.4 (January 30, 2011)
 
 - CSS updated to more closely mimic Chrome
