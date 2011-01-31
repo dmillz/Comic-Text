@@ -89,7 +89,7 @@ div.comic-text-popup {\n\
 	font-variant: normal;\n\
 	cursor: default;\n\
 	-webkit-border-radius: 4px;\n\
-	-webkit-box-shadow: 1px 1px 3px #505050;\n\
+	-webkit-box-shadow: 2px 2px 3px #676767;\n\
 	border: 1px solid #767676;\n\
 	color: #454545;\n\
 	text-align: left;\n\
