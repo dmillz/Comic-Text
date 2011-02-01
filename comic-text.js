@@ -11,7 +11,7 @@ var _mouseY;
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 	
-	// we may continue with everything else now that the options have loaded.
+	// we may continue with everything else now that the options have loaded
 	var opts = response;
 	
 	function isWhitelisted(url) {
