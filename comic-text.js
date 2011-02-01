@@ -3,19 +3,17 @@ var _mouseoverDelay = 100; // milliseconds
 var _fadeDuration = 140; // milliseconds
 
 // member vars
-var _isOverImage = false;
-var _isOverPopup = false;
 var _mouseX;
 var _mouseY;
-var _options;
 
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(response) {
-	_options = response;
+	
 	// we may continue with everything else now that the options have loaded.
+	var opts = response;
 	
 	function isWhitelisted(url) {
-		var regexs = util.getWhitelistRegexs(_options.whitelist);
+		var regexs = util.getWhitelistRegexs(opts.whitelist);
 		for (var i = 0; i < regexs.length; i++) {
 			if (regexs[i].test(url)) {
 				return true;
@@ -35,7 +33,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 							.appendTo($("body"));
 							
 			function hidePopup(originalTitle) {
-				if (!_isOverImage && !_isOverPopup) {
+				if (!isOverImage && !isOverPopup) {
 					console.log("hiding popup...");
 					
 					//restore the original title
@@ -46,14 +44,17 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 				}
 			}
 			
+			var isOverPopup = false;
+			var isOverImage = false;
+			
 			// handle mouseovers on the popup so we can keep it visible during mouseover
 			$popup.hover(
 				function() { // mouseover
-					_isOverPopup = true;
+					isOverPopup = true;
 				},
 				function() { // mouseout
 				
-					_isOverPopup = false;
+					isOverPopup = false;
 					
 					// wait a moment so the mouseover event on the image has a chance to fire
 					setTimeout(function() {
@@ -66,7 +67,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 			$(image).hover(
 				function(e) { 
 					
-					_isOverImage = true;
+					isOverImage = true;
 					
 					// remove the title to suppress the built-in tooltip
 					image.title = "";
@@ -74,7 +75,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 					// delay the appearance of the popup just slightly, to mimic Chrome
 					setTimeout(function() {
 
-						if (_isOverImage && !$popup.is(":visible")) {
+						if (isOverImage && !$popup.is(":visible")) {
 							console.log("showing popup...");
 							
 							// show the popup
@@ -89,7 +90,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 				}, 
 				function(e) { // mouseout
 					
-					_isOverImage = false;
+					isOverImage = false;
 					
 					// wait a moment so the mouseover event on the popup has a chance to fire
 					setTimeout(function() {
@@ -128,7 +129,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 		// inject our CSS into the page
 		$("<style/>")
 			.attr("type", "text/css")
-			.html(_options.css)
+			.html(opts.css)
 			.appendTo($("body"));
 	}
 });
