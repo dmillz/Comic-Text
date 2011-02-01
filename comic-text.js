@@ -1,6 +1,8 @@
 // Configuration
 var _mouseoverDelay = 100; // milliseconds
 var _fadeDuration = 140; // milliseconds
+var _offsetX = 0; // pixels from mouse
+var _offsetY = 22; // pixels from mouse
 
 // member vars
 var _mouseX;
@@ -25,6 +27,12 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 	function processImage(image) {
 		if (image.title) {
 			console.log("processing image with title: " + image.title);
+			
+			// track the mouse per-image
+			var isOverPopup = false;
+			var isOverImage = false;
+			
+			// save the image's original title for future reference
 			var originalTitle = image.title;
 			
 			var $popup = $("<div/>")
@@ -43,9 +51,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 					$popup.hide();					
 				}
 			}
-			
-			var isOverPopup = false;
-			var isOverImage = false;
 			
 			// handle mouseovers on the popup so we can keep it visible during mouseover
 			$popup.hover(
@@ -80,8 +85,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 							
 							// show the popup
 							$popup.css({ 
-										"top": _mouseY + "px",
-										"left": _mouseX + "px"
+										"top": (_mouseY + _offsetY) + "px",
+										"left": (_mouseX + _offsetX) + "px"
 										});
 							$popup.fadeIn(_fadeDuration);
 						}
