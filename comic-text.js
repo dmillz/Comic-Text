@@ -9,10 +9,7 @@ var _mouseX;
 var _mouseY;
 
 // load the options from the back-end
-chrome.extension.sendRequest({method: "getOptions"}, function(response) {
-	
-	// we may continue with everything else now that the options have loaded
-	var opts = response;
+chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 	
 	function isWhitelisted(url) {
 		var regexs = util.getWhitelistRegexs(opts.whitelist);
@@ -48,7 +45,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 			
 			// handle mouseouts on the popup
 			$popup.mouseout(function(e) { 				
-				// don't hide it if the mouse just entered the image
+				// don't hide the popup if the mouse just entered the image
 				if (e.relatedTarget !== image) {
 					hidePopup();																
 				}
@@ -61,7 +58,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 					
 					isOverImage = true;
 					
-					// don't do this if the mouse just exited the popup					
+					// no need to continue if the mouse just exited the popup					
 					if (e.relatedTarget !== $popup.get(0)) {
 						
 						// remove the title to suppress the built-in tooltip
@@ -69,6 +66,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 										
 						// delay the appearance of the popup just slightly, to mimic Chrome
 						setTimeout(function() {
+						
 							// make sure we're still over the image, 
 							if (isOverImage) {
 								console.log("showing popup...");
@@ -80,7 +78,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 								if (left + $popup.outerWidth() > $(window).width()) {
 									left -= (left + $popup.outerWidth()) - $(window).width();
 								}
-
 								if (top + $popup.outerHeight() > $(window).height()) {
 									top -= (top + $popup.outerHeight()) - $(window).height();
 								}
@@ -99,7 +96,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 				
 					isOverImage = false;
 					
-					// don't hide it if the mouse just entered the popup					
+					// don't hide the popup if the mouse just entered the popup					
 					if (e.relatedTarget !== $popup.get(0)) {
 						hidePopup();
 					}
