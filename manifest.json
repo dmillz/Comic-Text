@@ -2,7 +2,7 @@
   "name": "Comic Text",
   "author": "David Mills",
   "version": "1.0.5",
-  "description": "Replaces the built-in Chrome tooltip to enable easier reading of the title-text for popular web comics, such as xkcd.",
+  "description": "Replaces the built-in Chrome tooltip to enable easier reading of the mouseover title-text for popular webcomics, such as xkcd.",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
