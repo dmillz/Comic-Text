@@ -22,88 +22,98 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 	}
 
 	function processImage(image) {
-		if (image.title) {
-			console.log("processing image with title: " + image.title);
+		if (!image.title) {
+			return;
+		}
+		
+		console.log("processing image with title: " + image.title);
 			
-			// save the image's original title for future reference
-			var originalTitle = image.title;
+		// save the image's original title for future reference
+		var originalTitle = image.title;
+		
+		var $popup = $("<div/>")
+						.addClass("comic-text-popup")
+						.text(image.title)
+						.appendTo($("body"));
+						
+		function hidePopup() {
+			console.log("hiding popup...");
 			
-			var $popup = $("<div/>")
-							.addClass("comic-text-popup")
-							.text(image.title)
-							.appendTo($("body"));
-							
-			function hidePopup() {
-				console.log("hiding popup...");
-				
-				//restore the original title
-				image.title = originalTitle;
-				
-				// hide the popup
-				$popup.hide();					
+			//restore the original title
+			image.title = originalTitle;
+			
+			// hide the popup
+			$popup.hide();					
+		}
+		
+		function getPosition() {
+			var top = _mouseY + _offsetY;
+			var left = _mouseX + _offsetX;
+			
+			// reposition the popup if it runs up against the edge of the screen
+			if (left + $popup.outerWidth() > $(window).width()) {
+				left -= (left + $popup.outerWidth()) - $(window).width();
+			}
+			if (top + $popup.outerHeight() > $(window).height()) {
+				top -= (top + $popup.outerHeight()) - $(window).height();
 			}
 			
-			// handle mouseouts on the popup
-			$popup.mouseout(function(e) { 				
-				// don't hide the popup if the mouse just entered the image
-				if (e.relatedTarget !== image) {
-					hidePopup();																
-				}
-			});
-			
-			// handle mouseovers on the image itself
-			var isOverImage = false;
-			$(image).hover(
-				function(e) { // mouseover
-					
-					isOverImage = true;
-					
-					// no need to continue if the mouse just exited the popup					
-					if (e.relatedTarget !== $popup.get(0)) {
-						
-						// remove the title to suppress the built-in tooltip
-						image.title = "";
-										
-						// delay the appearance of the popup just slightly, to mimic Chrome
-						setTimeout(function() {
-						
-							// make sure we're still over the image, 
-							if (isOverImage) {
-								console.log("showing popup...");
-								
-								var top = _mouseY + _offsetY;
-								var left = _mouseX + _offsetX;
-								
-								// reposition the popup if it runs up against the edge of the screen
-								if (left + $popup.outerWidth() > $(window).width()) {
-									left -= (left + $popup.outerWidth()) - $(window).width();
-								}
-								if (top + $popup.outerHeight() > $(window).height()) {
-									top -= (top + $popup.outerHeight()) - $(window).height();
-								}
-								
-								// show the popup
-								$popup.css({ 
-											"top": top + "px",
-											"left": left + "px"
-											});
-								$popup.fadeIn(_fadeDuration);
-							}
-						}, _mouseoverDelay);
-					}
-				}, 
-				function(e) { // mouseout
+			return { top: top, 
+					 left: left };
+		}
+		
+		// handle mouseouts on the popup
+		$popup.mouseout(function(e) { 				
+			// don't hide the popup if the mouse just entered the image
+			if (e.relatedTarget !== image) {
+				hidePopup();																
+			}
+		});
+		
+		// handle mouseovers on the image itself
+		var isOverImage = false;
+		$(image).hover(
+			function(e) { // mouseover
 				
-					isOverImage = false;
+				isOverImage = true;
+				
+				// no need to continue if the mouse just exited the popup					
+				if (e.relatedTarget === $popup.get(0)) {
+					return;
+				}
 					
-					// don't hide the popup if the mouse just entered the popup					
-					if (e.relatedTarget !== $popup.get(0)) {
-						hidePopup();
+				// remove the title to suppress the built-in tooltip
+				image.title = "";
+								
+				// delay the appearance of the popup just slightly, to mimic Chrome
+				setTimeout(function() {
+				
+					// make sure we're still over the image, 
+					if (!isOverImage) {
+						return;
 					}
-				}			
-			);
+					
+					// show the popup
+					console.log("showing popup...");
+					var position = getPosition();
+					$popup.css({ 
+								"top": position.top + "px",
+								"left": position.left + "px"
+								});
+					$popup.fadeIn(_fadeDuration);
+					
+				}, _mouseoverDelay);
+			}, 
+			function(e) { // mouseout
 			
-		}  
+				isOverImage = false;
+				
+				// don't hide the popup if the mouse just entered the popup					
+				if (e.relatedTarget !== $popup.get(0)) {
+					hidePopup();
+				}
+			}			
+		);
 	}
 
 	// initialize everything
