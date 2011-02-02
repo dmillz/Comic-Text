@@ -28,10 +28,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 		if (image.title) {
 			console.log("processing image with title: " + image.title);
 			
-			// track the mouse per-image
-			var isOverPopup = false;
-			var isOverImage = false;
-			
 			// save the image's original title for future reference
 			var originalTitle = image.title;
 			
@@ -40,67 +36,73 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 							.text(image.title)
 							.appendTo($("body"));
 							
-			function hidePopup(originalTitle) {
-				if (!isOverImage && !isOverPopup) {
-					console.log("hiding popup...");
-					
-					//restore the original title
-					image.title = originalTitle;
-					
-					// hide the popup
-					$popup.hide();					
-				}
+			function hidePopup() {
+				console.log("hiding popup...");
+				
+				//restore the original title
+				image.title = originalTitle;
+				
+				// hide the popup
+				$popup.hide();					
 			}
 			
-			// handle mouseovers on the popup so we can keep it visible during mouseover
-			$popup.hover(
-				function() { // mouseover
-					isOverPopup = true;
-				},
-				function() { // mouseout
-				
-					isOverPopup = false;
-					
-					// wait a moment so the mouseover event on the image has a chance to fire
-					setTimeout(function() {
-						hidePopup();											
-					}, 10);
+			// handle mouseouts on the popup
+			$popup.mouseout(function(e) { 				
+				// don't hide it if the mouse just entered the image
+				if (e.relatedTarget !== image) {
+					hidePopup();																
 				}
-			);
+			});
 			
 			// handle mouseovers on the image itself
+			var isOverImage = false;
 			$(image).hover(
-				function(e) { 
+				function(e) { // mouseover
 					
 					isOverImage = true;
 					
-					// remove the title to suppress the built-in tooltip
-					image.title = "";
-									
-					// delay the appearance of the popup just slightly, to mimic Chrome
-					setTimeout(function() {
+					// don't do this if the mouse just exited the popup					
+					if (e.relatedTarget !== $popup.get(0)) {
+						
+						// remove the title to suppress the built-in tooltip
+						image.title = "";
+										
+						// delay the appearance of the popup just slightly, to mimic Chrome
+						setTimeout(function() {
+							// make sure we're still over the image, 
+							if (isOverImage) {
+								console.log("showing popup...");
+								
+								var top = _mouseY + _offsetY;
+								var left = _mouseX + _offsetX;
+								
+								// reposition the popup if it runs up against the edge of the screen
+								if (left + $popup.outerWidth() > $(window).width()) {
+									left -= (left + $popup.outerWidth()) - $(window).width();
+								}
 
-						if (isOverImage && !$popup.is(":visible")) {
-							console.log("showing popup...");
-							
-							// show the popup
-							$popup.css({ 
-										"top": (_mouseY + _offsetY) + "px",
-										"left": (_mouseX + _offsetX) + "px"
-										});
-							$popup.fadeIn(_fadeDuration);
-						}
-					}, _mouseoverDelay);
-					
+								if (top + $popup.outerHeight() > $(window).height()) {
+									top -= (top + $popup.outerHeight()) - $(window).height();
+								}
+								
+								// show the popup
+								$popup.css({ 
+											"top": top + "px",
+											"left": left + "px"
+											});
+								$popup.fadeIn(_fadeDuration);
+							}
+						}, _mouseoverDelay);
+					}
 				}, 
 				function(e) { // mouseout
-					
+				
 					isOverImage = false;
 					
-					// wait a moment so the mouseover event on the popup has a chance to fire
-					setTimeout(function() {
-						hidePopup();											
-					}, 10);
+					// don't hide it if the mouse just entered the popup					
+					if (e.relatedTarget !== $popup.get(0)) {
+						hidePopup();
+					}
 				}			
 			);
 			
@@ -112,7 +114,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(response) {
 		console.log("we're on the list!");
 		
 		// handle dynamic DOM insertions
-		$(document).bind('DOMNodeInserted', function(event) {
+		$(document).bind("DOMNodeInserted", function(event) {
 			$("img", event.target).each(function(index, image) {
 				processImage(image);
 			});
