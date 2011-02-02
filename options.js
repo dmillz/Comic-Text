@@ -8,7 +8,7 @@ options.saveWhitelist = function(whitelist) {
 
 options.loadWhitelist = function() {
 	var whitelist = localStorage["whitelist"];
-	if (whitelist == null) {
+	if (whitelist === null) {
 		// default to xkcd.com
 		whitelist = config.defaultWhitelist;	
 	}
@@ -22,7 +22,7 @@ options.saveCss = function(css) {
 
 options.loadCss = function() {
 	var css = localStorage["css"];
-	if (css == null) {
+	if (css === null) {
 		// default
 		css = config.defaultCss;		
 	}

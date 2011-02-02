@@ -7,7 +7,7 @@ util.getWhitelistRegexs = function(whitelist) {
 	var parts = whitelist.split(/\s+/);
 	for (var i = 0; i < parts.length; i++) {
 		// allow the user to simply enter "*" for all sites
-		var pattern = parts[i] == "*" ? ".*" : parts[i]; 
+		var pattern = parts[i] === "*" ? ".*" : parts[i]; 
 		regexs.push(new RegExp(pattern));
 	}	
 	return regexs;
@@ -40,7 +40,7 @@ util.userHasModifiedCss = function() {
 	// search the old versions for a match
 	var userCss = options.loadCss();
 	for (var i = 0; i <= config.currentCssVersion; i++) {
-		if (userCss == config.cssVersions[i]) {
+		if (userCss === config.cssVersions[i]) {
 			return false;
 		}
 	}
