@@ -62,3 +62,7 @@ Version 1.0.5 (January 31, 2011)
 - Fix for issue where popups would get "stuck" when quickly mousing between multiple titled images.
 - Popup is now positioned offset below the mouse cursor.
 - Another minor CSS tweak.
+
+Version 1.1.0 (February 12, 2011)
+
+- Some "under the hood" changes.
