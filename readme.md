@@ -66,3 +66,7 @@ Version 1.0.5 (January 31, 2011)
 Version 1.1.0 (February 12, 2011)
 
 - Some "under the hood" changes.
+
+Version 1.1.1 (February 18, 2011)
+
+- Fixed loading of default whitelist.
