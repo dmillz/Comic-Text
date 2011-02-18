@@ -8,9 +8,10 @@ options.saveWhitelist = function(whitelist) {
 
 options.loadWhitelist = function() {
 	var whitelist = localStorage["whitelist"];
-	if (whitelist === null) {
+	if (whitelist == null) {
 		// default to xkcd.com
-		whitelist = config.defaultWhitelist;	
+		whitelist = config.defaultWhitelist;
+		options.saveWhitelist(whitelist);
 	}
 	return whitelist;
 }
