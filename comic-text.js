@@ -5,10 +5,8 @@ var _offsetX = 0; // pixels from mouse
 var _offsetY = 22; // pixels from mouse
 
 // member vars
-var _mousePageX;
-var _mousePageY;
-var _mouseClientX;
-var _mouseClientY;
+var _mouseX;
+var _mouseY;
 
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
@@ -49,22 +47,20 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		}
 		
 		function getPosition() {
-			var pageTop = _mousePageY + _offsetY;
-			var pageLeft = _mousePageX + _offsetX;
-			var clientTop = _mouseClientY + _offsetY;
-			var clientLeft = _mouseClientX + _offsetX;
+			var top = _mouseY + _offsetY;
+			var left = _mouseX + _offsetX;
 			
 			// reposition the popup if it runs up against the edge of the screen
-			if (clientLeft + $popup.outerWidth() > $(window).width()) {
-				pageLeft -= (clientLeft + $popup.outerWidth()) - $(window).width();
+			if (left + $popup.outerWidth() > $(window).width()) {
+				left -= (left + $popup.outerWidth()) - $(window).width();
 			}
 			console.log("top: " + top + " popupHeight: " + $popup.outerHeight() + " windowHeight: " +  $(window).height());
-			if (clientTop + $popup.outerHeight() > $(window).height()) {
-				pageTop -= (clientTop + $popup.outerHeight()) - $(window).height();
+			if (top + $popup.outerHeight() > $(window).height()) {
+				top -= (top + $popup.outerHeight()) - $(window).height();
 			}
 			
-			return { top: pageTop, 
-					 left: pageLeft };
+			return { top: top, 
+					 left: left };
 		}
 		
 		// handle mouseouts on the popup
@@ -103,7 +99,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 					var position = getPosition();
 					$popup.css({ 
 								"top": position.top + "px",
-								"left": position.left + "px"
+								"left": position.left + "px",
+								"position": "fixed"
 								});
 					$popup.fadeIn(_fadeDuration);
 					
@@ -139,10 +136,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		// track the user's current mouse position
 		$(document).mousemove(function(e){
-			_mousePageX = e.pageX;
-			_mousePageY = e.pageY;
-			_mouseClientX = e.clientX;
-			_mouseClientY = e.clientY;
+			_mouseX = e.clientX;
+			_mouseY = e.clientY;
 		});	
 		
 		// inject our CSS into the page
