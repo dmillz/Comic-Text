@@ -5,8 +5,10 @@ var _offsetX = 0; // pixels from mouse
 var _offsetY = 22; // pixels from mouse
 
 // member vars
-var _mouseX;
-var _mouseY;
+var _mousePageX;
+var _mousePageY;
+var _mouseClientX;
+var _mouseClientY;
 
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
@@ -47,19 +49,22 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		}
 		
 		function getPosition() {
-			var top = _mouseY + _offsetY;
-			var left = _mouseX + _offsetX;
+			var pageTop = _mousePageY + _offsetY;
+			var pageLeft = _mousePageX + _offsetX;
+			var clientTop = _mouseClientY + _offsetY;
+			var clientLeft = _mouseClientX + _offsetX;
 			
 			// reposition the popup if it runs up against the edge of the screen
-			if (left + $popup.outerWidth() > $(window).width()) {
-				left -= (left + $popup.outerWidth()) - $(window).width();
+			if (clientLeft + $popup.outerWidth() > $(window).width()) {
+				pageLeft -= (clientLeft + $popup.outerWidth()) - $(window).width();
 			}
-			if (top + $popup.outerHeight() > $(window).height()) {
-				top -= (top + $popup.outerHeight()) - $(window).height();
+			console.log("top: " + top + " popupHeight: " + $popup.outerHeight() + " windowHeight: " +  $(window).height());
+			if (clientTop + $popup.outerHeight() > $(window).height()) {
+				pageTop -= (clientTop + $popup.outerHeight()) - $(window).height();
 			}
 			
-			return { top: top, 
-					 left: left };
+			return { top: pageTop, 
+					 left: pageLeft };
 		}
 		
 		// handle mouseouts on the popup
@@ -136,8 +141,10 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		// track the user's current mouse position
 		$(document).mousemove(function(e){
-			_mouseX = e.pageX;
-			_mouseY = e.pageY;
+			_mousePageX = e.pageX;
+			_mousePageY = e.pageY;
+			_mouseClientX = e.clientX;
+			_mouseClientY = e.clientY;
 		});	
 		
 		// inject our CSS into the page
