@@ -70,3 +70,9 @@ Version 1.1.0 (February 12, 2011)
 Version 1.1.1 (February 18, 2011)
 
 - Fixed loading of default whitelist.
+
+Version 1.1.2 (February 24, 2011)
+
+- Fixed bug in the way the popup was being positioned
+- Extension should now load slightly faster
+
