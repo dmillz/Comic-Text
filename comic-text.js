@@ -133,11 +133,9 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		});
 		
 		// process the original document
-		$(document).ready(function() {
-			$("img").each(function(index, image) {
-				processImage(image);
-			});
-		});
+		$("img").each(function(index, image) {
+			processImage(image);
+		});		
 		
 		// track the user's current mouse position
 		$(document).mousemove(function(e){
