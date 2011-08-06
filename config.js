@@ -1,6 +1,9 @@
 // namespace config
 var config = config || {};
 
+// debug mode
+config.isDebug = true;
+
 // whitelist
 config.defaultWhitelist = "xkcd.com";
 
