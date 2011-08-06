@@ -4,6 +4,9 @@ var config = config || {};
 // debug mode
 config.isDebug = true;
 
+// default list of html elements (* for all)
+config.defaultTags = "img";
+
 // whitelist
 config.defaultWhitelist = "xkcd.com";
 
