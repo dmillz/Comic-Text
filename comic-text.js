@@ -9,8 +9,11 @@ var _mouseX;
 var _mouseY;
 
 var _$popup;
-var _currentImage;
-var _currentImageTitle;
+var _currentElement;
+var _currentElementTitle;
+
+var _elementsProcessedCount = 0;
+var _elementsWithTitleCount = 0;
 
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
@@ -28,22 +31,22 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 	function processDocument() {
 		
 		var start = (new Date).getTime();
-		var count = 0;
-		$("img").each(function(index, image) {
-			processImage(image);
-			count++;
+		var selector = opts.tags;
+		if (selector === "all") {
+			selector = "*"
+		}		
+		$(selector).each(function(index, element) {
+			processElement(element);			
 		});		
 		var diff = (new Date).getTime() - start;
-		util.log("generated " + count + " popups in " + diff + " milliseconds");
-		
-		
+		util.log("processed " + _elementsProcessedCount + " elements (" + _elementsWithTitleCount + " with a title attribute) in " + diff + " milliseconds");
 	}
 	
 	function hidePopup() {
 		util.log("hiding popup...");
 		
 		//restore the original title
-		_currentImage.title = _currentImageTitle;
+		_currentElement.title = _currentElementTitle;
 		
 		// hide the popup
 		_$popup.hide();					
@@ -57,7 +60,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		if (left + _$popup.outerWidth() > $(window).width()) {
 			left -= (left + _$popup.outerWidth()) - $(window).width();
 		}
-		util.log("top: " + top + " popupHeight: " + _$popup.outerHeight() + " windowHeight: " +  $(window).height());
 		if (top + _$popup.outerHeight() > $(window).height()) {
 			top -= (top + _$popup.outerHeight()) - $(window).height();
 		}
@@ -66,40 +68,45 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				 left: left };
 	}
 	
-	function processImage(image) {
-		if (!image.title) {
+	function processElement(element) {
+		
+		_elementsProcessedCount++;
+	
+		if (!element.title) {
 			return;
 		}
 		
-		util.log("processing image with title: " + image.title);
+		_elementsWithTitleCount++;
 		
-		// handle mouseovers on the image itself
-		var isOverImage = false;
-		$(image).hover(
+		util.log("processing element with title: " + element.title);
+		
+		// handle mouseovers on the element itself
+		var isOverElement = false;
+		$(element).hover(
 			function(e) { // mouseover
 				
-				isOverImage = true;
+				isOverElement = true;
 				
 				// no need to continue if the mouse just exited the popup					
 				if (e.relatedTarget === _$popup.get(0)) {
 					return;
 				}
 				
-				// save the image's original title for future reference
-				_currentImageTitle = image.title;
+				// save the element's original title for future reference
+				_currentElementTitle = element.title;
 					
 				// remove the title to suppress the built-in tooltip
-				image.title = "";
-				_currentImage = image;				
+				element.title = "";
+				_currentElement = element;				
 				
 				// update the popup's text
-				_$popup.text(_currentImageTitle);
+				_$popup.text(_currentElementTitle);
 
 				// delay the appearance of the popup just slightly, to mimic Chrome
 				setTimeout(function() {
 				
-					// make sure we're still over the image, 
-					if (!isOverImage) {
+					// make sure we're still over the element, 
+					if (!isOverElement) {
 						return;
 					}
 					
@@ -117,7 +124,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 			}, 
 			function(e) { // mouseout
 			
-				isOverImage = false;
+				isOverElement = false;
 				
 				// don't hide the popup if the mouse just entered the popup					
 				if (e.relatedTarget !== _$popup.get(0)) {
@@ -142,8 +149,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		// handle mouseouts on the popup
 		_$popup.mouseout(function(e) { 				
-			// don't hide the popup if the mouse just entered the image
-			if (e.relatedTarget !== _currentImage) {
+			// don't hide the popup if the mouse just entered the element
+			if (e.relatedTarget !== _currentElement) {
 				hidePopup();																
 			}
 		});
@@ -154,8 +161,9 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		var start = (new Date).getTime();
 		
-		util.log("current site on the list!");
+		util.log("current site is on the list!");
 		
+		// inject our css & dom element into the page
 		injectPopup();
 		
 		// track the user's current mouse position
@@ -166,8 +174,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		// handle dynamic DOM insertions
 		$(document).bind("DOMNodeInserted", function(event) {
-			$("img", event.target).each(function(index, image) {
-				processImage(image);
+			$("img", event.target).each(function(index, element) {
+				processElement(element);
 			});
 		});
 		
