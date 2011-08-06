@@ -1,55 +1,67 @@
 // namespace options
 var options = options || {};
 
-// whitelist
-options.saveWhitelist = function(whitelist) {
-	localStorage["whitelist"] = whitelist;
-}
+(function() {
 
-options.loadWhitelist = function() {
-	var whitelist = localStorage["whitelist"];
-	if (whitelist == null) {
-		// default to xkcd.com
-		whitelist = config.defaultWhitelist;
-		options.saveWhitelist(whitelist);
+	function loadOption(name, defaultValue) {
+		var option = localStorage[name];
+		if (option == null) {
+			// load default
+			option = defaultValue;
+			localStorage[name] = option;
+		}
+		return option;
+	}	
+
+	function saveOption(name, value) {
+		localStorage[name] = value;
 	}
-	return whitelist;
-}
-
-// css 
-options.saveCss = function(css) {
-	localStorage["css"] = css;
-}
-
-options.loadCss = function() {
-	var css = localStorage["css"];
-	if (css === null) {
-		// default
-		css = config.defaultCss;		
+	
+	// tags
+	options.saveTags = function(tags) {
+		saveOption("tags", tags);
 	}
-	return css;
-}
+	options.loadTags = function() {
+		return loadOption("tags", config.defaultTags);
+	}		
 
-options.resetCss = function() {
-	options.saveCss(config.cssVersions[config.currentCssVersion]);
-}
+	// whitelist
+	options.saveWhitelist = function(whitelist) {
+		saveOption("whitelist", whitelist);
+	}
+	options.loadWhitelist = function() {
+		return loadOption("whitelist", config.defaultWhitelist);
+	}
 
-// css version
-options.loadUserCssVersion = function() {
-	return parseInt(localStorage["userCssVersion"]);	
-}
+	// css 
+	options.saveCss = function(css) {
+		saveOption("css", css);
+	}
+	options.loadCss = function() {
+		return ("css", config.cssVersions[config.currentCssVersion]);		
+	}
 
-options.saveUserCssVersion = function(version) {
-	localStorage["userCssVersion"] = ""+version;
-}
+	options.resetCss = function() {
+		options.saveCss(config.cssVersions[config.currentCssVersion]);
+	}
 
-// class OptionsContainer
-function OptionsContainer() {
-	this.whitelist = options.loadWhitelist();
-	this.css = options.loadCss();
-	this.userCssVersion = options.loadUserCssVersion();
-}
+	// css version
+	options.loadUserCssVersion = function() {
+		return parseInt(localStorage["userCssVersion"]);	
+	}
+	options.saveUserCssVersion = function(version) {
+		localStorage["userCssVersion"] = ""+version;
+	}
 
-options.getOptions = function() {
-	return new OptionsContainer();
-}
+	// class OptionsContainer
+	function OptionsContainer() {
+		this.whitelist = options.loadWhitelist();
+		this.css = options.loadCss();
+		this.userCssVersion = options.loadUserCssVersion();
+		this.tags = options.loadTags();
+	}
+
+	options.getOptions = function() {
+		return new OptionsContainer();
+	}
+})();
