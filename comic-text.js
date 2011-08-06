@@ -8,6 +8,10 @@ var _offsetY = 22; // pixels from mouse
 var _mouseX;
 var _mouseY;
 
+var _$popup;
+var _currentImage;
+var _currentImageTitle;
+
 // load the options from the back-end
 chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 	
@@ -23,22 +27,43 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 
 	function processDocument() {
 		
-		var popups = document.createDocumentFragment();
-		
 		var start = (new Date).getTime();
 		var count = 0;
 		$("img").each(function(index, image) {
-			popups.appendChild(processImage(image));
+			processImage(image);
 			count++;
 		});		
 		var diff = (new Date).getTime() - start;
 		util.log("generated " + count + " popups in " + diff + " milliseconds");
 		
-		start = (new Date).getTime();
-		$("body").append(popups);
-		diff = (new Date).getTime() - start;
 		
-		util.log("appended " + count + " elements in " + diff + " milliseconds");
+	}
+	
+	function hidePopup() {
+		util.log("hiding popup...");
+		
+		//restore the original title
+		_currentImage.title = _currentImageTitle;
+		
+		// hide the popup
+		_$popup.hide();					
+	}
+	
+	function getPosition() {
+		var top = _mouseY + _offsetY;
+		var left = _mouseX + _offsetX;
+		
+		// reposition the popup if it runs up against the edge of the screen
+		if (left + _$popup.outerWidth() > $(window).width()) {
+			left -= (left + _$popup.outerWidth()) - $(window).width();
+		}
+		util.log("top: " + top + " popupHeight: " + _$popup.outerHeight() + " windowHeight: " +  $(window).height());
+		if (top + _$popup.outerHeight() > $(window).height()) {
+			top -= (top + _$popup.outerHeight()) - $(window).height();
+		}
+		
+		return { top: top, 
+				 left: left };
 	}
 	
 	function processImage(image) {
@@ -47,48 +72,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		}
 		
 		util.log("processing image with title: " + image.title);
-			
-		// save the image's original title for future reference
-		var originalTitle = image.title;
-		
-		var $popup = $("<div/>")
-						.addClass("comic-text-popup")
-						.text(image.title);
-		
-		function hidePopup() {
-			util.log("hiding popup...");
-			
-			//restore the original title
-			image.title = originalTitle;
-			
-			// hide the popup
-			$popup.hide();					
-		}
-		
-		function getPosition() {
-			var top = _mouseY + _offsetY;
-			var left = _mouseX + _offsetX;
-			
-			// reposition the popup if it runs up against the edge of the screen
-			if (left + $popup.outerWidth() > $(window).width()) {
-				left -= (left + $popup.outerWidth()) - $(window).width();
-			}
-			util.log("top: " + top + " popupHeight: " + $popup.outerHeight() + " windowHeight: " +  $(window).height());
-			if (top + $popup.outerHeight() > $(window).height()) {
-				top -= (top + $popup.outerHeight()) - $(window).height();
-			}
-			
-			return { top: top, 
-					 left: left };
-		}
-		
-		// handle mouseouts on the popup
-		$popup.mouseout(function(e) { 				
-			// don't hide the popup if the mouse just entered the image
-			if (e.relatedTarget !== image) {
-				hidePopup();																
-			}
-		});
 		
 		// handle mouseovers on the image itself
 		var isOverImage = false;
@@ -98,13 +81,20 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				isOverImage = true;
 				
 				// no need to continue if the mouse just exited the popup					
-				if (e.relatedTarget === $popup.get(0)) {
+				if (e.relatedTarget === _$popup.get(0)) {
 					return;
 				}
+				
+				// save the image's original title for future reference
+				_currentImageTitle = image.title;
 					
 				// remove the title to suppress the built-in tooltip
 				image.title = "";
-								
+				_currentImage = image;				
+				
+				// update the popup's text
+				_$popup.text(_currentImageTitle);
+
 				// delay the appearance of the popup just slightly, to mimic Chrome
 				setTimeout(function() {
 				
@@ -116,12 +106,12 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 					// show the popup
 					util.log("showing popup...");
 					var position = getPosition();
-					$popup.css({ 
+					_$popup.css({ 
 								"top": position.top + "px",
 								"left": position.left + "px",
 								"position": "fixed"
 								});
-					$popup.fadeIn(_fadeDuration);
+					_$popup.fadeIn(_fadeDuration);
 					
 				}, _mouseoverDelay);
 			}, 
@@ -130,18 +120,49 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				isOverImage = false;
 				
 				// don't hide the popup if the mouse just entered the popup					
-				if (e.relatedTarget !== $popup.get(0)) {
+				if (e.relatedTarget !== _$popup.get(0)) {
 					hidePopup();
 				}
 			}			
 		);
-		
-		return $popup[0];
 	}
-
+	
+	function injectPopup() {
+	
+		// inject our CSS into the page
+		$("<style/>")
+			.attr("type", "text/css")
+			.html(opts.css)
+			.appendTo($("body"));
+			
+		// inject the one-and-only popup
+		_$popup = $("<div/>")
+						.addClass("comic-text-popup")
+						.appendTo("body");
+		
+		// handle mouseouts on the popup
+		_$popup.mouseout(function(e) { 				
+			// don't hide the popup if the mouse just entered the image
+			if (e.relatedTarget !== _currentImage) {
+				hidePopup();																
+			}
+		});
+	}
+	
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
-		util.log("we're on the list!");
+		
+		var start = (new Date).getTime();
+		
+		util.log("current site on the list!");
+		
+		injectPopup();
+		
+		// track the user's current mouse position
+		$(document).mousemove(function(e){
+			_mouseX = e.clientX;
+			_mouseY = e.clientY;
+		});	
 		
 		// handle dynamic DOM insertions
 		$(document).bind("DOMNodeInserted", function(event) {
@@ -153,16 +174,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		// process the original document
 		processDocument();
 		
-		// track the user's current mouse position
-		$(document).mousemove(function(e){
-			_mouseX = e.clientX;
-			_mouseY = e.clientY;
-		});	
-		
-		// inject our CSS into the page
-		$("<style/>")
-			.attr("type", "text/css")
-			.html(opts.css)
-			.appendTo($("body"));
+		var diff = (new Date).getTime() - start;
+		util.log("total initialization time: " + diff + " milliseconds");
 	}
 });
