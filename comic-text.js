@@ -28,14 +28,17 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		var start = (new Date).getTime();
 		var count = 0;
 		$("img").each(function(index, image) {
-			$(popups).append(processImage(image));
+			popups.appendChild(processImage(image));
 			count++;
 		});		
+		var diff = (new Date).getTime() - start;
+		util.log("generated " + count + " popups in " + diff + " milliseconds");
 		
+		start = (new Date).getTime();
 		$("body").append(popups);
+		diff = (new Date).getTime() - start;
 		
-		var diff = (new Date).getTime() - start;		
-		util.log(count + " images processed in " + diff + " milliseconds");
+		util.log("appended " + count + " elements in " + diff + " milliseconds");
 	}
 	
 	function processImage(image) {
