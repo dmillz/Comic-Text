@@ -21,23 +21,39 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		return false;
 	}
 
+	function processDocument() {
+		
+		var popups = document.createDocumentFragment();
+		
+		var start = (new Date).getTime();
+		var count = 0;
+		$("img").each(function(index, image) {
+			$(popups).append(processImage(image));
+			count++;
+		});		
+		
+		$("body").append(popups);
+		
+		var diff = (new Date).getTime() - start;		
+		util.log(count + " images processed in " + diff + " milliseconds");
+	}
+	
 	function processImage(image) {
 		if (!image.title) {
 			return;
 		}
 		
-		console.log("processing image with title: " + image.title);
+		util.log("processing image with title: " + image.title);
 			
 		// save the image's original title for future reference
 		var originalTitle = image.title;
 		
 		var $popup = $("<div/>")
 						.addClass("comic-text-popup")
-						.text(image.title)
-						.appendTo($("body"));
-						
+						.text(image.title);
+		
 		function hidePopup() {
-			console.log("hiding popup...");
+			util.log("hiding popup...");
 			
 			//restore the original title
 			image.title = originalTitle;
@@ -54,7 +70,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 			if (left + $popup.outerWidth() > $(window).width()) {
 				left -= (left + $popup.outerWidth()) - $(window).width();
 			}
-			console.log("top: " + top + " popupHeight: " + $popup.outerHeight() + " windowHeight: " +  $(window).height());
+			util.log("top: " + top + " popupHeight: " + $popup.outerHeight() + " windowHeight: " +  $(window).height());
 			if (top + $popup.outerHeight() > $(window).height()) {
 				top -= (top + $popup.outerHeight()) - $(window).height();
 			}
@@ -95,7 +111,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 					}
 					
 					// show the popup
-					console.log("showing popup...");
+					util.log("showing popup...");
 					var position = getPosition();
 					$popup.css({ 
 								"top": position.top + "px",
@@ -116,11 +132,13 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				}
 			}			
 		);
+		
+		return $popup[0];
 	}
 
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
-		console.log("we're on the list!");
+		util.log("we're on the list!");
 		
 		// handle dynamic DOM insertions
 		$(document).bind("DOMNodeInserted", function(event) {
@@ -130,9 +148,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		});
 		
 		// process the original document
-		$("img").each(function(index, image) {
-			processImage(image);
-		});		
+		processDocument();
 		
 		// track the user's current mouse position
 		$(document).mousemove(function(e){
