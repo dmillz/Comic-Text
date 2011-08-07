@@ -38,7 +38,7 @@ var options = options || {};
 		saveOption("css", css);
 	}
 	options.loadCss = function() {
-		return ("css", config.cssVersions[config.currentCssVersion]);		
+		return loadOption("css", config.cssVersions[config.currentCssVersion]);		
 	}
 
 	options.resetCss = function() {

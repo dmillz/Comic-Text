@@ -103,8 +103,7 @@
 		/* override the too-big buttons in the jquery ui theme */
 		.ui-widget {				
 			font-size: 0.8em;
-		}
-		
+		}		
 		
 	</style>
 </head>
@@ -147,6 +146,14 @@
 				<tr>
 					<td>
 						<label for="whitelist">Popup CSS</label>
+						<p class="note">
+							By default Comic Text will mimic Chrome's tooltips as closely as possible, but feel free
+							to tweak the CSS to best suit your own needs.
+						</p>
+						<p class="note">
+							For example, you may increase the font size for easier reading by changing the "font-size" entry: 							
+						</p>
+						<pre>font-size: 14px;</pre>
 					</td>
 					<td>
 						<p><input class="resetCss" type="button" value="Reset to default CSS" onclick="resetCss()" /></p>
@@ -164,15 +171,11 @@
 
 				$("input[type=button]").button();
 
-				$("#whitelist").val(options.loadWhitelist());
-				$("#css").val(options.loadCss());
-				$("input[name='tags']")
-						.filter("[value=" + options.loadTags() + "]")
-						.attr("checked", "checked");
-			});
-
 				$("input[Value=Save]").click(function(e) {
-					save(e);
+					save(e);				
+				});
+
+				load();
 			});
 	
 			function save(e) {
@@ -194,17 +197,19 @@
 
 			function load() {
 
-				$
+				$("#whitelist").val(options.loadWhitelist());
+				$("#css").val(options.loadCss());
+				$("input[name='tags']")
+						.filter("[value=" + options.loadTags() + "]")
+						.attr("checked", "checked");
+			}				
 
-				
-			}
-		
 			function resetCss() {
-				options.resetCss();
-				load();
-				var $wtf = $("#css");
-
-				$("#css").effect("highlight", {}, 1000);
+				if (confirm("If you have customized your CSS, your changes will be lost.\n\nAre you sure you want to reset the CSS?")) {
+					options.resetCss();
+					load();
+					$("#css").effect("highlight", {}, 1000);
+				}
 			}
 
 		</script>
