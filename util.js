@@ -10,7 +10,7 @@ util.log = function(o) {
 			console.log(o);
 		}
 	}
-}
+};
 
 util.getWhitelistRegexs = function(whitelist) {
 	// parse out the domains and turn them to regexs
@@ -22,7 +22,7 @@ util.getWhitelistRegexs = function(whitelist) {
 		regexs.push(new RegExp(pattern));
 	}	
 	return regexs;
-}
+};
 
 util.updateCssVersion = function() {
 	var userVersion = options.loadUserCssVersion();
@@ -45,7 +45,7 @@ util.updateCssVersion = function() {
 		options.saveUserCssVersion(config.currentCssVersion);
 		util.log("CSS has been updated to current version " + config.currentCssVersion);
 	}
-}
+};
 	
 util.userHasModifiedCss = function() {
 	// search the old versions for a match
@@ -56,11 +56,11 @@ util.userHasModifiedCss = function() {
 		}
 	}
 	return true;
-}
+};
 
 util.htmlEncode = function(value) {
 	return $('<div/>').text(value).html();
-} 
+};
 
 util.multiLineHtmlEncode = function(value) {
 	var lines = value.split(/\r\n|\r|\n/);
@@ -68,4 +68,9 @@ util.multiLineHtmlEncode = function(value) {
 		lines[i] = util.htmlEncode(lines[i]);
 	}
 	return lines.join("\r\n");
-}
+};
+
+util.prepareText = function(text) {
+	return util.multiLineHtmlEncode(text)
+			.replace(new RegExp( "\\r\\n", "g" ), "<br/>");;
+};

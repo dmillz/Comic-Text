@@ -1,7 +1,7 @@
 // Configuration
 var _mouseoverDelay = 100; // milliseconds
 var _fadeDuration = 140; // milliseconds
-var _offsetX = 0; // pixels from mouse
+var _offsetX = 10; // pixels from mouse
 var _offsetY = 22; // pixels from mouse
 
 // member vars
@@ -106,8 +106,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				element.title = "";
 								
 				// update the popup's text
-				var text = util.multiLineHtmlEncode(_currentElementTitles[_currentElementTitles.length-1]);
-				_$popup.html(text.replace(new RegExp( "\\r\\n", "g" ), "<br/>"));
+				var text = util.prepareText(_currentElementTitles[_currentElementTitles.length-1]);
+				_$popup.html(text);
 
 				// delay the appearance of the popup just slightly, to mimic Chrome
 				setTimeout(function() {
@@ -140,9 +140,6 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 					// if we just moused back to a parent container that also has a title, show the parent's popup
 					if (_currentElements.length > 0) {
 					
-						var text = util.multiLineHtmlEncode(_currentElementTitles[_currentElementTitles.length-1]);
-						_$popup.html(text.replace(new RegExp( "\\r\\n", "g" ), "<br/>"));
-						
 						// show the popup
 						util.log("moused back to container, showing parent's popup...");
 						var position = getPosition();
@@ -151,6 +148,8 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 									"left": position.left + "px",
 									"position": "fixed"
 									});
+						var text = util.prepareText(_currentElementTitles[_currentElementTitles.length-1]);
+						_$popup.html(text);
 						_$popup.fadeIn(_fadeDuration);
 					}
 				}
