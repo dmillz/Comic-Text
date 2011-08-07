@@ -2,7 +2,7 @@
 var config = config || {};
 
 // debug mode
-config.isDebug = true;
+config.isDebug = false;
 
 // default list of html elements (* for all)
 config.defaultTags = "img";
