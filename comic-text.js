@@ -145,8 +145,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 						var position = getPosition();
 						_$popup.css({ 
 									"top": position.top + "px",
-									"left": position.left + "px",
-									"position": "fixed"
+									"left": position.left + "px"
 									});
 						var text = util.prepareText(_currentElementTitles[_currentElementTitles.length-1]);
 						_$popup.html(text);
@@ -162,12 +161,17 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		// inject our CSS into the page
 		$("<style/>")
 			.attr("type", "text/css")
-			.html(opts.css)
+			.html(opts.css)			
 			.appendTo($("body"));
 			
 		// inject the one-and-only popup
 		_$popup = $("<div/>")
 						.addClass("comic-text-popup")
+						.css({
+							"position": "fixed",
+							"display": "none",
+							"z-index": "99999999"
+						})
 						.appendTo("body");
 		
 		// handle mouseouts on the popup
