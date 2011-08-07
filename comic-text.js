@@ -9,8 +9,8 @@ var _mouseX;
 var _mouseY;
 
 var _$popup;
-var _currentElement;
-var _currentElementTitle;
+var _currentElements = [];
+var _currentElementTitles = [];
 
 var _elementsProcessedCount = 0;
 var _elementsWithTitleCount = 0;
@@ -27,26 +27,31 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		}	
 		return false;
 	}
-
-	function processDocument() {
-		
-		var start = (new Date).getTime();
+	
+	function getTagSelector() {
 		var selector = opts.tags;
 		if (selector === "all") {
 			selector = "*"
 		}		
-		$(selector).each(function(index, element) {
+		return selector;
+	}
+	function processDocument() {
+		
+		var start = (new Date).getTime();		
+		$(getTagSelector()).each(function(index, element) {
 			processElement(element);			
 		});		
-		var diff = (new Date).getTime() - start;
-		util.log("processed " + _elementsProcessedCount + " elements (" + _elementsWithTitleCount + " with a title attribute) in " + diff + " milliseconds");
+		var elapsed = (new Date).getTime() - start;
+		util.log("processed " + _elementsProcessedCount + " elements (" + _elementsWithTitleCount + " with a title attribute) in " + elapsed + " milliseconds");
 	}
 	
 	function hidePopup() {
 		util.log("hiding popup...");
 		
 		//restore the original title
-		_currentElement.title = _currentElementTitle;
+		var element = _currentElements.pop();
+		var title = _currentElementTitles.pop();
+		element.title = title;
 		
 		// hide the popup
 		_$popup.hide();					
@@ -87,20 +92,22 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				
 				isOverElement = true;
 				
-				// no need to continue if the mouse just exited the popup					
-				if (e.relatedTarget === _$popup.get(0)) {
+				// no need to continue if the mouse just exited the popup and went back to the current element
+				if (e.relatedTarget === _$popup.get(0) && e.currentTarget === _currentElements[_currentElements.length-1]) {
+					util.log("no need to continue if the mouse just exited the popup and went back to the current element");
 					return;
 				}
 				
 				// save the element's original title for future reference
-				_currentElementTitle = element.title;
+				_currentElements.push(element);
+				_currentElementTitles.push(element.title);
 					
 				// remove the title to suppress the built-in tooltip
 				element.title = "";
-				_currentElement = element;				
-				
+								
 				// update the popup's text
-				_$popup.text(_currentElementTitle);
+				var text = util.multiLineHtmlEncode(_currentElementTitles[_currentElementTitles.length-1]);
+				_$popup.html(text.replace(new RegExp( "\\r\\n", "g" ), "<br/>"));
 
 				// delay the appearance of the popup just slightly, to mimic Chrome
 				setTimeout(function() {
@@ -129,6 +136,23 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 				// don't hide the popup if the mouse just entered the popup					
 				if (e.relatedTarget !== _$popup.get(0)) {
 					hidePopup();
+					
+					// if we just moused back to a parent container that also has a title, show the parent's popup
+					if (_currentElements.length > 0) {
+					
+						var text = util.multiLineHtmlEncode(_currentElementTitles[_currentElementTitles.length-1]);
+						_$popup.html(text.replace(new RegExp( "\\r\\n", "g" ), "<br/>"));
+						
+						// show the popup
+						util.log("moused back to container, showing parent's popup...");
+						var position = getPosition();
+						_$popup.css({ 
+									"top": position.top + "px",
+									"left": position.left + "px",
+									"position": "fixed"
+									});
+						_$popup.fadeIn(_fadeDuration);
+					}
 				}
 			}			
 		);
@@ -148,9 +172,9 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 						.appendTo("body");
 		
 		// handle mouseouts on the popup
-		_$popup.mouseout(function(e) { 				
-			// don't hide the popup if the mouse just entered the element
-			if (e.relatedTarget !== _currentElement) {
+		_$popup.mouseout(function(e) { 	
+			// don't hide the popup if the mouse just entered the current element
+			if (e.relatedTarget !== _currentElements[_currentElements.length-1]) {
 				hidePopup();																
 			}
 		});
@@ -174,7 +198,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		
 		// handle dynamic DOM insertions
 		$(document).bind("DOMNodeInserted", function(event) {
-			$("img", event.target).each(function(index, element) {
+			$(getTagSelector(), event.target).each(function(index, element) {
 				processElement(element);
 			});
 		});
@@ -182,7 +206,7 @@ chrome.extension.sendRequest({method: "getOptions"}, function(opts) {
 		// process the original document
 		processDocument();
 		
-		var diff = (new Date).getTime() - start;
-		util.log("total initialization time: " + diff + " milliseconds");
+		var elapsed = (new Date).getTime() - start;
+		util.log("total initialization time: " + elapsed + " milliseconds");
 	}
 });
