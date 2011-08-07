@@ -57,3 +57,15 @@ util.userHasModifiedCss = function() {
 	}
 	return true;
 }
+
+util.htmlEncode = function(value) {
+	return $('<div/>').text(value).html();
+} 
+
+util.multiLineHtmlEncode = function(value) {
+	var lines = value.split(/\r\n|\r|\n/);
+	for (var i = 0; i < lines.length; i++) {
+		lines[i] = util.htmlEncode(lines[i]);
+	}
+	return lines.join("\r\n");
+}
