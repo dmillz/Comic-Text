@@ -1,79 +1,194 @@
+<!DOCTYPE html />
 <html>
 <head>
 	<title>Comic Text Extension: Options</title>
 	<script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+	<script type="text/javascript" src="jquery-ui-1.8.14.custom.min.js"></script>
 	<script type="text/javascript" src="config.js"></script>
 	<script type="text/javascript" src="options.js"></script>
+
+	<style type="text/css">
+		body, 
+		html 
+		{
+			margin:0;
+			padding:0;
+			color:#000;
+			background:#ffffff;
+			font-family: 'Segoe UI', Calibri, Helvetica, Verdana, sans-serif;
+			font-size: 14px; 
+		}
+		table {
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+		p { margin: 0; padding: 0; }
+		
+		.clear { clear: both; }
+				
+		#header  
+		{
+			background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#e4e5f0)); 
+			padding: 8px;
+			vertical-align: middle;
+		}
+		#header h1  
+		{
+			font-size: 2em; 
+		}
+		
+		.options td
+		{
+			padding-top: 24px;
+			padding-left: 24px;	
+			padding-right: 24px;
+			padding-bottom: 24px;
+			border-top: 1px solid #cecece;
+			vertical-align: top;
+		}		
+		
+		.options td:first-of-type
+		{
+			padding-top: 16px;
+			text-align: right;
+			width: 24%;
+			background-image: -webkit-gradient( linear,
+												right top,
+												left top,
+												color-stop(0, rgb(228,229,240)),
+												color-stop(0, rgb(228,229,240)),
+												color-stop(0.06, rgb(245,246,255)),
+												color-stop(0.53, rgb(255,255,255))
+											);
+		}
+		
+		.options td:first-of-type label 
+		{
+			font-size: 1.4em;
+			font-weight: bold;
+		}
+		
+		.options td:last-of-type
+		{
+			
+		}
+		
+		.options .tr
+		{
+			min-height: 200px;			
+		}
+		
+		input[type=button]
+		{
+			margin-top: 8px;
+			margin-right: 8px;
+		}
+		
+		.note
+		{
+			margin-top: 20px;
+			font-size: .9em;
+		}
+		
+		.resetCss
+		{
+			float: right;
+			margin-right: 20px;
+		}
+
+	</style>
 </head>
 <body onload="load()">
 
-	<style type="text/css">
-		body { font-family: sans-serif; font-size: 14px; background-color: #ececec; }
-		h2 { font-size: 1.4em; margin-bottom: 0;}	
-		h3 { margin: 0; }
-	</style>
+	<div id="main">
 
-	<h1>Comic Text: Options</h1>
-	<hr/>
+		<div id="header">
+			<h1>Comic Text: Options</h1>
+		</div>
 	
-	<label for="whitelist"><h2>Enable Comic Text for these domains</h2><h3>(one per line, or enter * for all sites)</h3></label>
-	<textarea id="whitelist" rows="10" cols="50"></textarea>
-	<div style="margin-bottom: 20px;">
-		<input type="button" value="Save" class="save" />
-	</div>
-	
-	<h2>Process the following HTML elements</h2></label>
-	<input type="radio" value="img" name="tags" id="chkAll"><label for="chkAll">Only process &lt;img&gt; tags (default)</label><br/>
-	<input type="radio" value="all" name="tags" id="chkImg"><label for="chkImg">Process ALL html tags</label>
-	<div style="margin-bottom: 20px;">
-		<input type="button" value="Save" class="save" />
-	</div>
-	
-	<label for="whitelist"><h2>Popup CSS</h2></label>
-	<textarea id="css" rows="20" cols="90"></textarea><br/>
-	<input type="button" style="clear:left;" value="Reset to default CSS" onclick="resetCss()" />
-	
-	<div style="margin-top: 20px;">
-		<input type="button" value="Save" class="save" />
-	</div>
-
-	<script type="text/javascript">
-
-		$(".save").click(function(e) {
-			save(e);
-		});
-	
-		function save(e) {
-			options.saveWhitelist($("#whitelist").val());
-			options.saveCss($("#css").val());
-			options.saveTags($("input:radio[name=tags]:checked").val());
-			
-			// show a success msg
-			var $success = $("<span/>")
-								.css("color", "green")
-								.css("font-weight", "bold")
-								.html("All settings have been saved.")
-								.insertAfter($(e.target));
-			
-			setTimeout(function() {
-				$success.fadeOut(1000);
-			}, 1000);			
-		}
+		<div id="body">
 		
-		function load() {
-			$("#whitelist").val(options.loadWhitelist());			
-			$("#css").val(options.loadCss());
-			$("input[name='tags']")
-				.filter("[value=" + options.loadTags() + "]")
-				.attr("checked", "checked");
-		}
+			<table class="options">
+				<tr>
+					<td>
+						<label for="whitelist">Enable Comic Text for these domains</label>
+					</td>
+					<td>
+						<p>One per line, or enter * for all sites</p>
+						<p>(default is "xkcd.com")</p>
+						<p><textarea id="whitelist" rows="10" cols="50"></textarea></p>
+						<p><input type="button" value="Save" /></p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="whitelist">Use Comic Text tooltips for the following HTML elements</label>
+						<p class="note">Tooltips and mouseover texts are (usually) defined by setting the "title" attribute on an HTML element. The "title" attribute
+						is <a href="http://www.w3.org/TR/html-markup/global-attributes.html" target="_blank">valid for <em>ALL</em> HTML elements</a>.<br /><br />
+						Comic Text is capable of scanning the entire page and replacing tooltips for <i>any</i> element.</p>
+					</td>
+					<td>
+						<p><input type="radio" value="img" name="tags" id="chkAll" /><label for="chkAll">Only process &lt;img&gt; elements (default)</label></p>
+						<p><input type="radio" value="all" name="tags" id="chkImg" /><label for="chkImg">Process ALL html elements</label></p>
+						<p><input type="button" value="Save" /></p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="whitelist">Popup CSS</label>
+					</td>
+					<td>
+						<div style="width: 770px;">
+							<p class="resetCss"><input type="button" value="Reset to default CSS" onclick="resetCss()" /></p>
+							<p><textarea id="css" rows="20" cols="90"></textarea></p>
+						</div>						
+						<p><input type="button" value="Save" /></p>					
+					</td>						
+				</tr>		
+			</table>
+
+		</div>
+
+		<script type="text/javascript">
+
+			$("input[Value=Save]").click(function(e) {
+				save(e);
+			});
+	
+			function save(e) {
+				options.saveWhitelist($("#whitelist").val());
+				options.saveCss($("#css").val());
+				options.saveTags($("input:radio[name=tags]:checked").val());
+			
+				// show a success msg
+				var $success = $("<span/>")
+									.css("color", "green")
+									.css("font-weight", "bold")
+									.html("All settings have been saved.")
+									.insertAfter($(e.target));
+			
+				setTimeout(function() {
+					$success.fadeOut(1000);
+				}, 1000);			
+			}
 		
-		function resetCss() {
-			options.resetCss();
-			load();
-		}
+			function load() {
+				$("#whitelist").val(options.loadWhitelist());			
+				$("#css").val(options.loadCss());
+				$("input[name='tags']")
+					.filter("[value=" + options.loadTags() + "]")
+					.attr("checked", "checked");
+			}
+		
+			function resetCss() {
+				options.resetCss();
+				load();
+				var $wtf = $("#css");
 
-</script>
+				$("#css").effect("highlight", {}, 1000);
+			}
 
+		</script>
+	</div>
 </body>
 </html>
