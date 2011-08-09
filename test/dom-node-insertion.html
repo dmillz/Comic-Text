@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>dynamic style</title></head>
+<script type="text/javascript" src="../jquery-1.6.2.min.js"></script>
+<body>
+
+<script>
+	
+	$(document).ready(function() { 
+		
+		var total = 20;
+
+		for (var i = 0; i < total; i++)
+		{
+			var text = "element #" + (i + 1);
+			$("<span/>")
+				.text(text)
+				.attr("title", text)
+				.appendTo("body");
+		}
+
+	});
+</script>
+
+</body>
+</html>

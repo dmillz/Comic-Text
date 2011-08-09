@@ -2,7 +2,7 @@
 var config = config || {};
 
 // debug mode
-config.isDebug = false;
+config.isDebug = true;
 
 // default list of html elements (* for all)
 config.defaultTags = "img";
@@ -161,5 +161,6 @@ div.comic-text-popup {\n\
 	text-transform: none;\n\
 	list-style: none;\n\
 	text-indent: 0;\n\
+	margin: 0;\n\
 }"];
 
