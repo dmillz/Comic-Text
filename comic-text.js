@@ -10,6 +10,7 @@ var _mouseY;
 
 var _$popup;
 var _elementInfos = [];
+var _currentElement;
 
 var _elementsProcessedCount = 0;
 var _elementsWithTitleCount = 0;
@@ -36,34 +37,6 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		return selector;
 	}
 
-	function processDocument() {
-
-		var start = (new Date).getTime();
-		$(getTagSelector()).each(function (index, element) {
-			processElement(element);
-		});
-		var elapsed = (new Date).getTime() - start;
-		util.log("processed " + _elementsProcessedCount + " elements (" + _elementsWithTitleCount + " with a title attribute) in " + elapsed + " milliseconds");
-	}
-
-	function hidePopup() {
-		util.log("hiding popup...");
-
-		var elementInfo = _elementInfos.pop();
-		if (elementInfo) {
-			$(elementInfo.element).data("isActive", false);
-
-			// restore the original title
-			elementInfo.element.title = elementInfo.title;
-
-			var s = elementInfo ? elementInfo.title : elementInfo;
-			util.log("popped an element titled '" + s + "' -- stack size: " + _elementInfos.length);
-			util.log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
-
-			_$popup.hide();
-		}
-	}
-
 	function getPosition() {
 		var top = _mouseY + _offsetY;
 		var left = _mouseX + _offsetX;
@@ -81,23 +54,24 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		};
 	}
 
-	function showNextPopup() {
+	function showPopup() {
 
-		// if we just moused back to a parent container that also has a title, show the parent's popup
+		// use the element info on the top of the stack
 		if (_elementInfos.length > 0) {
 
-			util.log("there's another popup to show");
+			// use the topmost popup
 			var info = _elementInfos[_elementInfos.length - 1];
 
 			var text = util.prepareText(info.title);
 			_$popup.html(text);
 			_$popup.hide();
 
+			util.log("starting countdown to show : " + info.title);
 			setTimeout(function () {
 				if (info.isMouseOver) {
 
 					// show the popup
-					util.log("showing next popup...");
+					util.log("showing popup: " + info.title);
 					var position = getPosition();
 					_$popup.css({
 						"top": position.top + "px",
@@ -108,79 +82,6 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 				}
 			}, _mouseoverDelay);
 		}
-	}
-
-	function processElement(element) {
-
-		_elementsProcessedCount++;
-
-		if (!element.title) {
-			return;
-		}
-
-		var $element = $(element);
-		if (!$element.data("processed")) {
-			!$element.data("processed", true);
-			_uniqueElementsCount++;
-		}
-
-		_elementsWithTitleCount++;
-
-		util.log("processing element with title: " + element.title + " -- count: " + _elementsWithTitleCount);
-
-		// handle mouseovers on the element itself
-		var elementInfo = new model.ElementInfo(element, element.title, false);
-
-		$element.bind("mouseenter", function (e) {
-			util.log("mouseenter");
-
-			elementInfo.isMouseOver = true;
-
-			// no need to continue if the mouse just exited the popup and went back to the current element
-			if (e.relatedTarget === _$popup.get(0) &&
-				_elementInfos[_elementInfos.length - 1] &&
-				e.currentTarget === _elementInfos[_elementInfos.length - 1].element) {
-
-				util.log("no need to continue if the mouse just exited the popup and went back to the current element");
-				return;
-			}
-
-			if ($element.data("isActive")) {
-				util.log("no need to continue since the element is already on the stack");
-				return;
-			}
-
-			// save the element's original info for future reference
-			if (e.relatedTarget === _$popup.get(0)) {
-				// detect the case where we just left the popup after clearing the stack,
-				// since the mouseenter events will fire in the reverse order from what we want.
-				_elementInfos.splice(0, 0, elementInfo);
-			}
-			else {
-				_elementInfos.push(elementInfo);
-			}
-			$element.data("isActive", true);
-			var s = elementInfo ? elementInfo.title : elementInfo;
-			util.log("pushed new element titled '" + s + "' -- stack size: " + _elementInfos.length);
-			util.log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
-
-			// remove the title to suppress the built-in tooltip
-			element.title = "";
-
-			showNextPopup();
-		});
-
-		$element.bind("mouseleave", function (e) {
-
-			util.log("mouseleave");
-			elementInfo.isMouseOver = false;
-
-			// don't hide the popup if the mouse just entered the popup					
-			if (e.relatedTarget !== _$popup.get(0)) {
-				hidePopup();
-				showNextPopup();
-			}
-		});
 	}
 
 	function injectPopup() {
@@ -200,25 +101,54 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 							"z-index": "99999999"
 						})
 						.appendTo("body");
+	}
 
-		// handle mouseouts on the popup
-		_$popup.mouseout(function (e) {
+	function onMouseLeave(e) {
 
-			util.log("mouseout of popup");
+		// if we moused into the popup, rebind the mouseleave handler to the popup
+		if (e.relatedTarget === _$popup[0]) {
+			util.log("rebinding mouseleave to popup");
+			_$popup.one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+			return;
+		}
 
-			// don't hide the popup if the mouse just entered the current element
-			if (e.relatedTarget === _elementInfos[_elementInfos.length - 1].element) {
-				return;
-			}
+		// if we moused from the popup into the current element, rebind to the element
+		if (e.relatedTarget === _currentElement) {
+			util.log("rebinding mouseleave to original element");
+			$(_currentElement).one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+			return;
+		}
 
-			// clear the stack and let it rebuild as mouseenter events fire
-			util.log("clearing the stack");
-			while (_elementInfos.length > 0) {
-				hidePopup();
-			}
+		var elementInfo = e.data.elementInfo;
+		util.log("marking as !isMouseOver: " + elementInfo.title);
+		elementInfo.isMouseOver = false;
 
-			showNextPopup();
-		});
+		// remove this item from the stack
+		var info = _elementInfos.pop();
+		info.element.title = info.title;
+		printStack("popped", info);
+	}
+
+	function printStack(operation, info) {
+		var s = info ? info.title : info;
+		util.log(operation + " an element titled '" + s + "' -- stack size: " + _elementInfos.length);
+		util.log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
+	}
+
+	function processElement(element, addCallback) {
+
+		util.log("processing element: " + element.title);
+
+		// push an entry onto the stack
+		var info = new model.ElementInfo(element, element.title, true);
+		addCallback(info);
+
+		// suppress the built-in tooltip
+		element.title = "";
+
+		// handle mouseouts so we can know if the mouse leaves 
+		// the element before the popup ever appears
+		$(element).one("mouseleave", { elementInfo: info }, onMouseLeave);
 	}
 
 	// initialize everything
@@ -231,26 +161,52 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		// inject our css & dom element into the page
 		injectPopup();
 
-		// track the user's current mouse position
+		// keep track of where the mouse is and show popups as needed
 		$(document).mousemove(function (e) {
+
 			_mouseX = e.clientX;
 			_mouseY = e.clientY;
+
+			// don't continue unless we're on a new element
+			if (_currentElement === e.target) {
+				return;
+			}
+
+			// the tooltip itself doesn't count
+			if (e.target === _$popup[0]) {
+				return;
+			}
+
+			_currentElement = e.target;
+			util.log("---------------------------");
+
+			if (_$popup.is(":visible")) {
+				_$popup.hide();
+			}
+
+			// if we weren't already over the current element, it'll
+			// have a title, so let's wire it up
+			if (_currentElement.title) {
+
+				// handle the current element
+				processElement(_currentElement, function (info) {
+					_elementInfos.push(info);
+					printStack("pushed", info);
+				});
+
+				// we need to suppress tooltips for any parent elements, too
+				$(_currentElement).parents().each(function () {
+					if (this.title) {
+						processElement(this, function (info) {
+							_elementInfos.splice(0, 0, info);
+							printStack("spliced", info);
+						});
+					}
+				});
+			}
+
+			// show the popup
+			showPopup();
 		});
-
-		// handle dynamic DOM insertions
-		$(document).bind("DOMNodeInserted", function (event) {
-			$(getTagSelector(), event.target).each(function (index, element) {
-				processElement(element);
-			});
-
-			util.log("elements with title processed: " + _elementsWithTitleCount + " -- unqiue elements: " + _uniqueElementsCount);
-		});
-
-		// process the original document
-		processDocument();
-		util.log("elements with title processed: " + _elementsWithTitleCount + " -- unqiue elements: " + _uniqueElementsCount);
-
-		var elapsed = (new Date).getTime() - start;
-		util.log("total initialization time: " + elapsed + " milliseconds");
 	}
 });
