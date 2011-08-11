@@ -1,3 +1,6 @@
+// performance timer
+var start = (new Date).getTime();
+
 // Configuration
 var _mouseoverDelay = 100; // milliseconds
 var _fadeDuration = 140; // milliseconds
@@ -108,6 +111,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 			return;
 		}
 
+		// mark the element as not having the mouse over it
 		var elementInfo = e.data.elementInfo;
 		util.log("marking as !isMouseOver: " + elementInfo.title);
 		elementInfo.isMouseOver = false;
@@ -115,7 +119,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		// remove this item from the stack
 		var info = _elementInfos.pop();
 
-		// restore the original title
+		// restore the element's original title
 		info.element.title = info.title;
 		printStack("popped", info);
 	}
@@ -158,19 +162,20 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 			return;
 		}
 
+		// we're on a new element
 		_currentElement = e.target;
 		util.log("---------------------------");
 
+		// so hide the popup
 		if (_$popup.is(":visible")) {
 			_$popup.hide();
 		}
 
-		// if we weren't already over the current element, it'll
-		// have a title, so let's wire it up
+		// if we weren't previously over the current element, it'll
+		// have a title, so let's process it
 		if (_currentElement.title) {
 
 			// handle the current element
-
 			processElement(_currentElement, function (info) {
 				_elementInfos.push(info);
 				printStack("pushed", info);
@@ -195,8 +200,6 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
-
-		var start = (new Date).getTime();
 
 		util.log("current site is on the list!");
 
