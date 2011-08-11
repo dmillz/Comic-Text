@@ -12,6 +12,8 @@ Comic Text is a Chrome extension that replaces the built-in Chrome tooltip to en
 
 ### Get it for free from the [Chrome Web Store](https://chrome.google.com/webstore/detail/hfpglafkfedcnnojpioconphfcelcljj)
 
+New! Comic Text is now capable of scanning the entire page and replacing tooltips for *any* page element, not just images. Turn on the option by accessing the Comic Text extension options ([Wrench Icon] > Tools > Extensions, and then find the "Options" link under the Comic Text extension.)
+
 What's wrong with Chrome's mouseover text tooltips?
 ---------------------------------------------------
 They don't last long enough to read the entirety of the mouseover title text on many popular web comics, such as [xkcd](xkcd.com). [Other people](http://www.google.com/support/forum/p/Chrome/thread?tid=4f641efdaeb3c585) have also [been annoyed by this behavior](http://code.google.com/p/chromium/issues/detail?id=1441). By default, Chrome's tooltips disappear after about 5 seconds; but with Comic Text installed, they will last as long as your mouse remains over the image. 
@@ -79,5 +81,5 @@ Version 1.1.2 (February 24, 2011)
 Version 1.2.0 (August 7, 2011)
 
 - New! Optionally replace tooltips for *ALL* HTML elements, not just images.
-- Faster than ever before.
+- Rewritten tooltip engine for superior performance.
 - Shiny new options page.
