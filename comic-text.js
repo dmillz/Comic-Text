@@ -152,6 +152,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		_mouseX = e.clientX;
 		_mouseY = e.clientY;
 
+
 		// don't continue unless we're on a new element
 		if (_currentElement === e.target) {
 			return;
@@ -173,7 +174,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 		// if we weren't previously over the current element, it'll
 		// have a title, so let's process it
-		if (_currentElement.title) {
+		if (_currentElement.title && $(_currentElement).is(getTagSelector())) {
 
 			// handle the current element
 			processElement(_currentElement, function (info) {
