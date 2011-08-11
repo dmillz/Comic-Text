@@ -12,10 +12,6 @@ var _$popup;
 var _elementInfos = [];
 var _currentElement;
 
-var _elementsProcessedCount = 0;
-var _elementsWithTitleCount = 0;
-var _uniqueElementsCount = 0;
-
 // load the options from the back-end
 chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
@@ -54,34 +50,27 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		};
 	}
 
-	function showPopup() {
+	function showPopup(info) {
 
-		// use the element info on the top of the stack
-		if (_elementInfos.length > 0) {
+		var text = util.prepareText(info.title);
+		_$popup.html(text);
+		_$popup.hide();
 
-			// use the topmost popup
-			var info = _elementInfos[_elementInfos.length - 1];
+		util.log("starting countdown to show : " + info.title);
+		setTimeout(function () {
+			if (info.isMouseOver) {
 
-			var text = util.prepareText(info.title);
-			_$popup.html(text);
-			_$popup.hide();
+				// show the popup
+				util.log("showing popup: " + info.title);
+				var position = getPosition();
+				_$popup.css({
+					"top": position.top + "px",
+					"left": position.left + "px"
+				});
 
-			util.log("starting countdown to show : " + info.title);
-			setTimeout(function () {
-				if (info.isMouseOver) {
-
-					// show the popup
-					util.log("showing popup: " + info.title);
-					var position = getPosition();
-					_$popup.css({
-						"top": position.top + "px",
-						"left": position.left + "px"
-					});
-
-					_$popup.fadeIn(_fadeDuration);
-				}
-			}, _mouseoverDelay);
-		}
+				_$popup.fadeIn(_fadeDuration);
+			}
+		}, _mouseoverDelay);
 	}
 
 	function injectPopup() {
@@ -125,6 +114,8 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 		// remove this item from the stack
 		var info = _elementInfos.pop();
+
+		// restore the original title
 		info.element.title = info.title;
 		printStack("popped", info);
 	}
@@ -151,6 +142,57 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		$(element).one("mouseleave", { elementInfo: info }, onMouseLeave);
 	}
 
+	// keep track of where the mouse is and show popups as needed
+	function onMouseMove(e) {
+
+		_mouseX = e.clientX;
+		_mouseY = e.clientY;
+
+		// don't continue unless we're on a new element
+		if (_currentElement === e.target) {
+			return;
+		}
+
+		// the tooltip itself doesn't count
+		if (e.target === _$popup[0]) {
+			return;
+		}
+
+		_currentElement = e.target;
+		util.log("---------------------------");
+
+		if (_$popup.is(":visible")) {
+			_$popup.hide();
+		}
+
+		// if we weren't already over the current element, it'll
+		// have a title, so let's wire it up
+		if (_currentElement.title) {
+
+			// handle the current element
+
+			processElement(_currentElement, function (info) {
+				_elementInfos.push(info);
+				printStack("pushed", info);
+			});
+
+			// we need to suppress tooltips for any parent elements, too
+			$(_currentElement).parents().each(function () {
+				if (this.title) {
+					processElement(this, function (info) {
+						_elementInfos.splice(0, 0, info);
+						printStack("spliced", info);
+					});
+				}
+			});
+		}
+
+		// show the popup. info is at the top of the stack
+		if (_elementInfos.length > 0) {
+			showPopup(_elementInfos[_elementInfos.length - 1]);
+		}
+	}
+
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
 
@@ -161,52 +203,10 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		// inject our css & dom element into the page
 		injectPopup();
 
-		// keep track of where the mouse is and show popups as needed
-		$(document).mousemove(function (e) {
+		// show tooltips by tracking mouse movement and acting accordingly
+		$(document).mousemove(onMouseMove);
 
-			_mouseX = e.clientX;
-			_mouseY = e.clientY;
-
-			// don't continue unless we're on a new element
-			if (_currentElement === e.target) {
-				return;
-			}
-
-			// the tooltip itself doesn't count
-			if (e.target === _$popup[0]) {
-				return;
-			}
-
-			_currentElement = e.target;
-			util.log("---------------------------");
-
-			if (_$popup.is(":visible")) {
-				_$popup.hide();
-			}
-
-			// if we weren't already over the current element, it'll
-			// have a title, so let's wire it up
-			if (_currentElement.title) {
-
-				// handle the current element
-				processElement(_currentElement, function (info) {
-					_elementInfos.push(info);
-					printStack("pushed", info);
-				});
-
-				// we need to suppress tooltips for any parent elements, too
-				$(_currentElement).parents().each(function () {
-					if (this.title) {
-						processElement(this, function (info) {
-							_elementInfos.splice(0, 0, info);
-							printStack("spliced", info);
-						});
-					}
-				});
-			}
-
-			// show the popup
-			showPopup();
-		});
+		var elapsed = (new Date).getTime() - start;
+		util.log("total initialization time: " + elapsed + " milliseconds");
 	}
 });
