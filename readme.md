@@ -78,7 +78,7 @@ Version 1.1.2 (February 24, 2011)
 - Fixed bug in the way the popup was being positioned
 - Extension should now load slightly faster
 
-Version 1.2.0 (August 7, 2011)
+Version 1.2.0/1.2.1 (August 7, 2011)
 
 - New! Optionally replace tooltips for *ALL* HTML elements, not just images.
 - Rewritten tooltip engine for superior performance.
