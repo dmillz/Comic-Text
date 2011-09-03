@@ -191,8 +191,9 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 			return;
 		}
 		
-		// ignore <embed>s, they don't play by the rules
-		if (e.target.tagName === "EMBED") {
+		// ignore <embed>s amd <object>s, they don't play by the rules
+		if (e.target.tagName === "EMBED" ||
+		    e.target.tagName === "OBJECT") {
 			return;
 		} 		
 
