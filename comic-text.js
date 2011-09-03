@@ -190,6 +190,11 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		if (e.target === _$popup[0]) {
 			return;
 		}
+		
+		// ignore <embed>s, they don't play by the rules
+		if (e.target.tagName === "EMBED") {
+			return;
+		} 		
 
 		// we're on a new element
 		_currentElement = e.target;
