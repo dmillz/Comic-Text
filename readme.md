@@ -44,9 +44,9 @@ Thank you, Randall Munroe, for the hilarious web comic, and also for releasing y
 Copyright & License
 -------------------
 
-Copyright (c) 2011 David Mills, 
+Copyright (c) 2011 David Mills. 
 
-This work is released under the [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/)
+This work is released under the [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/). If you are using this code for commercial purposes, the attribution must be public and prominent.
 
 Changelog
 ---------
