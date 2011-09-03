@@ -32,6 +32,11 @@ Comic Text doesn't seem to work on &lt;my favorite site&gt;.
 -------------------------------------------------------
 If you find a bug, or just have a question, please [submit it as an issue](https://github.com/dmillz/Comic-Text/issues).
 
+The popup won't get out of my way.
+----------------------------------
+You may hide the Comic Text tooltip popup by right-clicking on it.
+
+
 Copyright & License
 -------------------
 
@@ -83,3 +88,8 @@ Version 1.2.0/1.2.1 (August 7, 2011)
 - New! Optionally replace tooltips for *ALL* HTML elements, not just images.
 - Rewritten tooltip engine for superior performance.
 - Shiny new options page.
+
+Version 1.2.2 (September 2, 2011)
+
+- The Comic Text tooltip may now be dimissed by right clicking on it.
+- When using the Comic Text to replace all HTML elements, <embed>s are no longer processed, since they don't reliably fire mouse events. 
