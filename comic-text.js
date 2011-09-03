@@ -93,6 +93,34 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 							"z-index": "99999999"
 						})
 						.appendTo("body");
+						
+						
+		// dismiss the popup on right click
+		var cancelNext = false;
+		_$popup.mousedown(function(e) {
+			
+			util.log("popup was clicked, button #: " + e.which);
+			
+			if (e.which != 3) { // right click only
+				return;
+			}
+			
+			// hide it
+			if (_$popup.is(":visible")) {
+				_$popup.hide();
+			}
+			
+			// set the flag to cancel the next context menu
+			cancelNext = true;
+		});
+		
+		// cancel the context menu if the popup was just dismissed
+		$(document).bind("contextmenu",function(e){
+			if (cancelNext) {
+				cancelNext = false;
+				return false;
+			}
+		});
 	}
 
 	function onMouseLeave(e) {
@@ -165,7 +193,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 		// we're on a new element
 		_currentElement = e.target;
-		util.log("---------------------------");
+		util.log("------- new element --------");
 
 		// so hide the popup
 		if (_$popup.is(":visible")) {
