@@ -191,7 +191,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 			return;
 		}
 		
-		// ignore <embed>s amd <object>s, they don't play by the rules
+		// ignore <embed>s and <object>s, they don't play by the rules
 		if (e.target.tagName === "EMBED" ||
 		    e.target.tagName === "OBJECT") {
 			return;
@@ -206,8 +206,8 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 			_$popup.hide();
 		}
 
-		// if we weren't previously over the current element, it'll
-		// have a title, so let's process it
+		// If we weren't previously over the current element, it may
+		// have a title. If so, let's process it
 		if (_currentElement.title && $(_currentElement).is(getTagSelector())) {
 
 			// handle the current element
