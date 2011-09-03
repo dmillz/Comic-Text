@@ -96,4 +96,4 @@ Version 1.2.0/1.2.1 (August 7, 2011)
 Version 1.2.2/1.2.3 (September 2, 2011)
 
 - The Comic Text tooltip may now be dimissed by right clicking on it.
-- When using Comic Text to replace all HTML elements <object>s and <embed>s are no longer processed, since they don't reliably fire mouse events. 
+- When using Comic Text to replace all HTML elements &lt;object&gt;s and &lt;embed&gt;s are no longer processed, since they don't reliably fire mouse events. 
