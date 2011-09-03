@@ -32,9 +32,13 @@ Comic Text doesn't seem to work on &lt;my favorite site&gt;.
 -------------------------------------------------------
 If you find a bug, or just have a question, please [submit it as an issue](https://github.com/dmillz/Comic-Text/issues).
 
-The popup won't get out of my way.
-----------------------------------
-You may hide the Comic Text tooltip popup by right-clicking on it.
+The Comic Text popup sometimes gets in my way.
+----------------------------------------------
+You may dismiss the Comic Text tooltip by right-clicking on it.
+
+# Thank you, Randall Munroe
+
+Thank you, Randall Munroe, for the hilarious web comic, and also for releasing your work under the [Creative Commons Attribution-NonCommercial 2.5 License](http://creativecommons.org/licenses/by-nc/2.5/). All of Comic Text's icons, images, screenshots, and inspiration have been derived from [xkcd](http://xkcd.com).
 
 
 Copyright & License
