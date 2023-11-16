@@ -12,18 +12,6 @@ export const log = function(o) {
 	}
 };
 
-export const getWhitelistRegexs = function(whitelist) {
-	// parse out the domains and turn them to regexs
-	var regexs = [];
-	var parts = whitelist.split(/\s+/);
-	for (var i = 0; i < parts.length; i++) {
-		// allow the user to simply enter "*" for all sites
-		var pattern = parts[i] === "*" ? ".*" : parts[i]; 
-		regexs.push(new RegExp(pattern));
-	}	
-	return regexs;
-};
-
 export const updateCssVersion = async function() {
 	var userVersion = await loadUserCssVersion();
 	log("User has CSS version " + userVersion);
@@ -58,19 +46,3 @@ export const userHasModifiedCss = function() {
 	return true;
 };
 
-export const htmlEncode = function(value) {
-	return $('<div/>').text(value).html();
-};
-
-export const multiLineHtmlEncode = function(value) {
-	var lines = value.split(/\r\n|\r|\n/);
-	for (var i = 0; i < lines.length; i++) {
-		lines[i] = util.htmlEncode(lines[i]);
-	}
-	return lines.join("\r\n");
-};
-
-export const prepareText = function(text) {
-	return util.multiLineHtmlEncode(text)
-			.replace(new RegExp( "\\r\\n", "g" ), "<br/>");;
-};

@@ -16,10 +16,26 @@ var _elementInfos = [];
 var _currentElement;
 
 // load the options from the back-end
-chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
+chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
+
+	function log(msg) {
+		console.log(msg);
+	}
+
+	function getWhitelistRegexs(whitelist) {
+		// parse out the domains and turn them to regexs
+		var regexs = [];
+		var parts = whitelist.split(/\s+/);
+		for (var i = 0; i < parts.length; i++) {
+			// allow the user to simply enter "*" for all sites
+			var pattern = parts[i] === "*" ? ".*" : parts[i]; 
+			regexs.push(new RegExp(pattern));
+		}	
+		return regexs;
+	};
 
 	function isWhitelisted(url) {
-		var regexs = util.getWhitelistRegexs(opts.whitelist);
+		var regexs = getWhitelistRegexs(opts.whitelist);
 		for (var i = 0; i < regexs.length; i++) {
 			if (regexs[i].test(url)) {
 				return true;
@@ -53,18 +69,35 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		};
 	}
 
+	function htmlEncode(value) {
+		return $('<div/>').text(value).html();
+	};
+
+	function multiLineHtmlEncode(value) {
+		var lines = value.split(/\r\n|\r|\n/);
+		for (var i = 0; i < lines.length; i++) {
+			lines[i] = htmlEncode(lines[i]);
+		}
+		return lines.join("\r\n");
+	};
+
+	function prepareText(text) {
+		return multiLineHtmlEncode(text)
+				.replace(new RegExp( "\\r\\n", "g" ), "<br/>");;
+	};
+
 	function showPopup(info) {
 
-		var text = util.prepareText(info.title);
+		var text = prepareText(info.title);
 		_$popup.html(text);
 		_$popup.hide();
 
-		util.log("starting countdown to show : " + info.title);
+		log("starting countdown to show : " + info.title);
 		setTimeout(function () {
 			if (info.isMouseOver) {
 
 				// show the popup
-				util.log("showing popup: " + info.title);
+				log("showing popup: " + info.title);
 				var position = getPosition();
 				_$popup.css({
 					"top": position.top + "px",
@@ -99,7 +132,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		var cancelNext = false;
 		_$popup.mousedown(function(e) {
 			
-			util.log("popup was clicked, button #: " + e.which);
+			log("popup was clicked, button #: " + e.which);
 			
 			if (e.which != 3) { // right click only
 				return;
@@ -127,21 +160,21 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 		// if we moused into the popup, rebind the mouseleave handler to the popup
 		if (e.relatedTarget === _$popup[0]) {
-			util.log("rebinding mouseleave to popup");
+			log("rebinding mouseleave to popup");
 			_$popup.one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
 			return;
 		}
 
 		// if we moused from the popup into the current element, rebind to the element
 		if (e.relatedTarget === _currentElement) {
-			util.log("rebinding mouseleave to original element");
+			log("rebinding mouseleave to original element");
 			$(_currentElement).one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
 			return;
 		}
 
 		// mark the element as not having the mouse over it
 		var elementInfo = e.data.elementInfo;
-		util.log("marking as !isMouseOver: " + elementInfo.title);
+		log("marking as !isMouseOver: " + elementInfo.title);
 		elementInfo.isMouseOver = false;
 
 		// remove this item from the stack
@@ -154,13 +187,13 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 	function printStack(operation, info) {
 		var s = info ? info.title : info;
-		util.log(operation + " an element titled '" + s + "' -- stack size: " + _elementInfos.length);
-		util.log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
+		log(operation + " an element titled '" + s + "' -- stack size: " + _elementInfos.length);
+		log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
 	}
 
 	function processElement(element, addCallback) {
 
-		util.log("processing element: " + element.title);
+		log("processing element: " + element.title);
 
 		// push an entry onto the stack
 		var info = new model.ElementInfo(element, element.title, true);
@@ -199,7 +232,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 		// we're on a new element
 		_currentElement = e.target;
-		util.log("------- new element --------");
+		log("------- new element --------");
 
 		// so hide the popup
 		if (_$popup.is(":visible")) {
@@ -236,7 +269,7 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
 
-		util.log("current site is on the list!");
+		log("current site is on the list!");
 
 		// inject our css & dom element into the page
 		injectPopup();
@@ -245,6 +278,6 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		$(document).mousemove(onMouseMove);
 
 		var elapsed = (new Date).getTime() - start;
-		util.log("total initialization time: " + elapsed + " milliseconds");
+		log("total initialization time: " + elapsed + " milliseconds");
 	}
 });

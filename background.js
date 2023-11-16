@@ -9,8 +9,11 @@ chrome.runtime.onMessage.addListener(
     function(message, sender, sendResponse) {        
         switch(message.method) {
             case "getOptions":
-                getOptions().then(options => sendResponse(options));
-                break;
+                getOptions().then(options => {
+                    console.log("options", options); 
+                    sendResponse(options)
+                });
+                return true;
 
             default:
                 throw "Did not recognize the requested method: " + message.method;
