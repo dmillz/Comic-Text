@@ -1,7 +1,7 @@
-// namespace util
-var util = util || {};
+import { config } from "./config.js";
+import { loadUserCssVersion, resetCss, saveUserCssVersion } from "./options.js";
 
-util.log = function(o) {
+export const log = function(o) {
 	if (config.isDebug) {
 		if (typeof(o) === "string") {
 			console.log("(Comic Text) " + o);
@@ -12,7 +12,7 @@ util.log = function(o) {
 	}
 };
 
-util.getWhitelistRegexs = function(whitelist) {
+export const getWhitelistRegexs = function(whitelist) {
 	// parse out the domains and turn them to regexs
 	var regexs = [];
 	var parts = whitelist.split(/\s+/);
@@ -24,32 +24,32 @@ util.getWhitelistRegexs = function(whitelist) {
 	return regexs;
 };
 
-util.updateCssVersion = function() {
-	var userVersion = options.loadUserCssVersion();
-	util.log("User has CSS version " + userVersion);
-	util.log("Current CSS version is " + config.currentCssVersion);
+export const updateCssVersion = async function() {
+	var userVersion = await loadUserCssVersion();
+	log("User has CSS version " + userVersion);
+	log("Current CSS version is " + config.currentCssVersion);
 	if (isNaN(userVersion) || userVersion != config.currentCssVersion) {
-		util.log("Upgrading CSS version");
+		log("Upgrading CSS version");
 		
 		// Don't overwrite CSS if we've previsouly saved a 
 		// CSS version #, and they've customized their CSS.
-		if (!isNaN(userVersion) && util.userHasModifiedCss()) {
+		if (!isNaN(userVersion) && userHasModifiedCss()) {
 			// Instead, just update the version number.
-			util.log("User has modified CSS that won't be touched, updating version number to " + config.currentCssVersion);
-			options.saveUserCssVersion(config.currentCssVersion);
+			log("User has modified CSS that won't be touched, updating version number to " + config.currentCssVersion);
+			saveUserCssVersion(config.currentCssVersion);
 			return;
 		}
 		
 		// otherwise, update the css the to latest version
-		options.resetCss();
-		options.saveUserCssVersion(config.currentCssVersion);
-		util.log("CSS has been updated to current version " + config.currentCssVersion);
+		resetCss();
+		saveUserCssVersion(config.currentCssVersion);
+		log("CSS has been updated to current version " + config.currentCssVersion);
 	}
 };
 	
-util.userHasModifiedCss = function() {
+export const userHasModifiedCss = function() {
 	// search the old versions for a match
-	var userCss = options.loadCss();
+	var userCss = loadCss();
 	for (var i = 0; i <= config.currentCssVersion; i++) {
 		if (userCss === config.cssVersions[i]) {
 			return false;
@@ -58,11 +58,11 @@ util.userHasModifiedCss = function() {
 	return true;
 };
 
-util.htmlEncode = function(value) {
+export const htmlEncode = function(value) {
 	return $('<div/>').text(value).html();
 };
 
-util.multiLineHtmlEncode = function(value) {
+export const multiLineHtmlEncode = function(value) {
 	var lines = value.split(/\r\n|\r|\n/);
 	for (var i = 0; i < lines.length; i++) {
 		lines[i] = util.htmlEncode(lines[i]);
@@ -70,7 +70,7 @@ util.multiLineHtmlEncode = function(value) {
 	return lines.join("\r\n");
 };
 
-util.prepareText = function(text) {
+export const prepareText = function(text) {
 	return util.multiLineHtmlEncode(text)
 			.replace(new RegExp( "\\r\\n", "g" ), "<br/>");;
 };
