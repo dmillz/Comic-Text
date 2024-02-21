@@ -1,19 +1,5 @@
 import { config } from "./config.js";
 
-// function loadOption(name, defaultValue) {
-// 	var option = localStorage[name];
-// 	if (option == null) {
-// 		// load default
-// 		option = defaultValue;
-// 		localStorage[name] = option;
-// 	}
-// 	return option;
-// }	
-
-// function saveOption(name, value) {
-// 	localStorage[name] = value;
-// }
-
 async function loadOption(name, defaultValue) {
 	var option = (await chrome.storage.sync.get(name))[name];
 	if (option == null) {
