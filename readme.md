@@ -3,7 +3,7 @@ Comic Text
 - **Source Code**: https://github.com/dmillz/Comic-Text
 - **Extension**: https://chrome.google.com/webstore/detail/hfpglafkfedcnnojpioconphfcelcljj
 - **Author**: David Mills
-- **Copyright**: 2011 David Mills
+- **Copyright**: David Mills
 - **License**: This work is licensed under a [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/).
 
 What is Comic Text?
@@ -44,56 +44,6 @@ Thank you, Randall Munroe, for the hilarious web comic, and also for releasing y
 Copyright & License
 -------------------
 
-Copyright (c) 2011 David Mills. 
+Copyright (c) David Mills. 
 
 This work is released under the [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/). If you are using this code for commercial purposes, the attribution must be public and prominent.
-
-Changelog
----------
-
-Version 1.0 (January 27, 2011)
-
-- Initial Release
-
-Version 1.0.1 (January 27, 2011)
-
-- Fix to support Google Reader
-
-Version 1.0.2 (January 29, 2011)
-
-- More robust CSS (If you customized your CSS, it will not be overwritten. You have to "reset" it to get the update)
-- Various tweaks and minor improvements
-
-Version 1.0.3/1.0.4 (January 30, 2011)
-
-- CSS updated to more closely mimic Chrome
-
-Version 1.0.5 (January 31, 2011)
-
-- Fix for issue where popups would get "stuck" when quickly mousing between multiple titled images.
-- Popup is now positioned offset below the mouse cursor.
-- Another minor CSS tweak.
-
-Version 1.1.0 (February 12, 2011)
-
-- Some "under the hood" changes.
-
-Version 1.1.1 (February 18, 2011)
-
-- Fixed loading of default whitelist.
-
-Version 1.1.2 (February 24, 2011)
-
-- Fixed bug in the way the popup was being positioned
-- Extension should now load slightly faster
-
-Version 1.2.0/1.2.1 (August 7, 2011)
-
-- New! Optionally replace tooltips for *ALL* HTML elements, not just images.
-- Rewritten tooltip engine for superior performance.
-- Shiny new options page.
-
-Version 1.2.2/1.2.3 (September 2, 2011)
-
-- The Comic Text tooltip may now be dimissed by right clicking on it.
-- When using Comic Text to replace all HTML elements &lt;object&gt;s and &lt;embed&gt;s are no longer processed, since they don't reliably fire mouse events. 
