@@ -1,6 +1,3 @@
-const $ = document.querySelector.bind(document);
-const $$ = document.querySelectorAll.bind(document);
-
 // performance timer
 const start = (new Date).getTime();
 
@@ -20,7 +17,7 @@ const elementInfos = [];
 chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 
 	function log(msg) {
-		console.log(msg);
+		//console.log(msg);
 	}
 
 	function getWhitelistRegexs(whitelist) {
@@ -73,14 +70,6 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		el.innerText = text;
 		return el.innerHTML;
 	};
-
-	// function multiLineHtmlEncode(value) {
-	// 	var lines = value.split(/\r\n|\r|\n/);
-	// 	for (var i = 0; i < lines.length; i++) {
-	// 		lines[i] = htmlEncode(lines[i]);
-	// 	}
-	// 	return lines.join("\r\n");
-	// };
 
 	function prepareText(text) {
 		return htmlEncode(text)
@@ -144,15 +133,6 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 			}
 		});
 		
-		// // cancel the context menu if the popup was just dismissed
-		// document.addEventListener("contextmenu", function(e){
-		// 	if (cancelNext) {
-		// 		cancelNext = false;
-		// 		return false;
-		// 	}
-		// });
-	}
-
 	function onMouseLeave(e, elementInfo) {
 
 		// if we moused into the popup, rebind the mouseleave handler to the popup
