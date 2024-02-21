@@ -2,11 +2,8 @@
 <html>
 <head>
 	<title>Comic Text Extension: Options</title>
-	<script type="text/javascript" src="jquery-1.6.2.min.js"></script>
-	<script type="text/javascript" src="jquery-ui-1.8.14.custom.min.js"></script>
-	<script type="text/javascript" src="config.js"></script>
-	<script type="text/javascript" src="options.js"></script>
-	<link rel="stylesheet" href="css/custom-theme/jquery-ui-1.8.14.custom.css" />
+	<script type="module" src="./options.js"></script>
+	<script type="module" src="./options-page.js"></script>
 	<style type="text/css">
 		body, 
 		html 
@@ -116,8 +113,8 @@
 			<h1>Comic Text: Options</h1>
 		</div>
 	
-		<div id="body">
-		
+		<form id="optionsForm">
+				
 			<table class="options">
 				<tr>
 					<td>
@@ -127,7 +124,7 @@
 					</td>
 					<td>
 						<p><textarea id="whitelist" rows="10" cols="50"></textarea></p>
-						<p><input type="button" value="Save" /></p>
+						<p><button class="save">Save</button></p>
 					</td>
 				</tr>
 				<tr>
@@ -140,7 +137,7 @@
 					<td>
 						<p><input type="radio" value="img" name="tags" id="chkAll" /><label for="chkAll">Only process images (default)</label></p>
 						<p><input type="radio" value="all" name="tags" id="chkImg" /><label for="chkImg">Process ALL html elements</label></p>
-						<p><input type="button" value="Save" /></p>
+						<p><button class="save">Save</button></p>
 					</td>
 				</tr>
 				<tr>
@@ -156,16 +153,14 @@
 						<pre>font-size: 14px;</pre>
 					</td>
 					<td>
-						<p><input class="resetCss" type="button" value="Reset to default CSS" onclick="resetCss()" /></p>
+						<p><button class="resetCss">Reset to default CSS</button></p>
 						<p><textarea id="css" rows="20" cols="90"></textarea></p>
-						<p><input type="button" value="Save" /></p>					
+						<p><button class="save">Save</button></p>					
 					</td>						
 				</tr>		
 			</table>
 
-		</div>
-
-		<script type="text/javascript" src="options-page.js"></script>
+		</form>
 	</div>
 </body>
 </html>

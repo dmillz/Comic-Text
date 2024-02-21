@@ -1,19 +1,20 @@
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+
 // performance timer
-var start = (new Date).getTime();
+const start = (new Date).getTime();
 
 // Configuration
-var _mouseoverDelay = 100; // milliseconds
-var _fadeDuration = 140; // milliseconds
-var _offsetX = 10; // pixels from mouse
-var _offsetY = 22; // pixels from mouse
+const MOUSEOVER_DELAY = 100; // milliseconds
+const FADE_DURATION = 140; // milliseconds
+const OFFSET_X = 10; // pixels from mouse
+const OFFSET_Y = 22; // pixels from mouse
 
-// member vars
-var _mouseX;
-var _mouseY;
-
-var _$popup;
-var _elementInfos = [];
-var _currentElement;
+let mouseX;
+let mouseY;
+let popupEl;
+let currentElement;
+const elementInfos = [];
 
 // load the options from the back-end
 chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
@@ -53,44 +54,44 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 	}
 
 	function getPosition() {
-		var top = _mouseY + _offsetY;
-		var left = _mouseX + _offsetX;
+		var top = mouseY + OFFSET_Y;
+		var left = mouseX + OFFSET_X;
 
 		// reposition the popup if it runs up against the edge of the screen
-		if (left + _$popup.outerWidth() > $(window).width()) {
-			left -= (left + _$popup.outerWidth()) - $(window).width();
+		if (left + popupEl.offsetWidth > window.offsetWidth) {
+			left -= (left + popupEl.offsetWidth) - window.offsetWidth;
 		}
-		if (top + _$popup.outerHeight() > $(window).height()) {
-			top -= (top + _$popup.outerHeight()) - $(window).height();
+		if (top + popupEl.offsetHeight > window.offsetHeight) {
+			top -= (top + popupEl.offsetHeight) - window.offsetHeight;
 		}
 
-		return { top: top,
-			left: left
-		};
+		return { top, left };
 	}
 
-	function htmlEncode(value) {
-		return $('<div/>').text(value).html();
+	function htmlEncode(text) {
+		var el = document.createElement('textarea');
+		el.innerText = text;
+		return el.innerHTML;
 	};
 
-	function multiLineHtmlEncode(value) {
-		var lines = value.split(/\r\n|\r|\n/);
-		for (var i = 0; i < lines.length; i++) {
-			lines[i] = htmlEncode(lines[i]);
-		}
-		return lines.join("\r\n");
-	};
+	// function multiLineHtmlEncode(value) {
+	// 	var lines = value.split(/\r\n|\r|\n/);
+	// 	for (var i = 0; i < lines.length; i++) {
+	// 		lines[i] = htmlEncode(lines[i]);
+	// 	}
+	// 	return lines.join("\r\n");
+	// };
 
 	function prepareText(text) {
-		return multiLineHtmlEncode(text)
-				.replace(new RegExp( "\\r\\n", "g" ), "<br/>");;
+		return htmlEncode(text)
+			.replace(/\r\n|\r|\n/g, "<br/>");;
 	};
 
 	function showPopup(info) {
 
 		var text = prepareText(info.title);
-		_$popup.html(text);
-		_$popup.hide();
+		popupEl.innerHTML = text;
+		popupEl.style.display = "none";
 
 		log("starting countdown to show : " + info.title);
 		setTimeout(function () {
@@ -99,76 +100,72 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 				// show the popup
 				log("showing popup: " + info.title);
 				var position = getPosition();
-				_$popup.css({
+				popupEl.css({
 					"top": position.top + "px",
 					"left": position.left + "px"
 				});
 
-				_$popup.fadeIn(_fadeDuration);
+				popupEl.fadeIn(FADE_DURATION);
 			}
-		}, _mouseoverDelay);
+		}, MOUSEOVER_DELAY);
 	}
 
 	function injectPopup() {
 
 		// inject our CSS into the page
-		$("<style/>")
-			.attr("type", "text/css")
-			.html(opts.css)
-			.appendTo($("body"));
+		const styleEl = document.createElement("style");
+		styleEl.innerHTML = opts.css;
+		document.body.appendChild(styleEl);
 
 		// inject the one-and-only popup
-		_$popup = $("<div/>")
-						.addClass("comic-text-popup")
-						.css({
-							"position": "fixed",
-							"display": "none",
-							"z-index": "99999999"
-						})
-						.appendTo("body");
+		popupEl = document.createElement("div");
+		popupEl.classList.add("comic-text-popup");
+		popupEl.style.position = "fixed";
+		popupEl.style.display = "none";
+		popupEl.style.zIndex = "99999999";
+		document.body.appendChild(popupEl);
 						
 						
 		// dismiss the popup on right click
-		var cancelNext = false;
-		_$popup.mousedown(function(e) {
+		popupEl.addEventListener("mousedown", function(e) {
 			
-			log("popup was clicked, button #: " + e.which);
+			log("popup was clicked, button #: " + e.button);
 			
-			if (e.which != 3) { // right click only
+			if (e.button != 2) { // right click only
 				return;
 			}
 			
+			// suppress the context menu
+			e.preventDefault();
+
 			// hide it
-			if (_$popup.is(":visible")) {
-				_$popup.hide();
+			if (popupEl.is(":visible")) {
+				popupEl.hide();
 			}
-			
-			// set the flag to cancel the next context menu
-			cancelNext = true;
 		});
 		
-		// cancel the context menu if the popup was just dismissed
-		$(document).bind("contextmenu",function(e){
-			if (cancelNext) {
-				cancelNext = false;
-				return false;
-			}
-		});
+		// // cancel the context menu if the popup was just dismissed
+		// document.addEventListener("contextmenu", function(e){
+		// 	if (cancelNext) {
+		// 		cancelNext = false;
+		// 		return false;
+		// 	}
+		// });
 	}
 
-	function onMouseLeave(e) {
+	function onMouseLeave(e, elementInfo) {
 
 		// if we moused into the popup, rebind the mouseleave handler to the popup
-		if (e.relatedTarget === _$popup[0]) {
+		if (e.relatedTarget === popupEl) {
 			log("rebinding mouseleave to popup");
-			_$popup.one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+			popupEl.addEventListener("mouseleave", e => onMouseLeave(e, elementInfo), { once: true });
 			return;
 		}
 
 		// if we moused from the popup into the current element, rebind to the element
-		if (e.relatedTarget === _currentElement) {
+		if (e.relatedTarget === currentElement) {
 			log("rebinding mouseleave to original element");
-			$(_currentElement).one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+			currentElement.addEventListener("mouseleave", e => onMouseLeave(e, elementInfo), { once: true });
 			return;
 		}
 
@@ -178,7 +175,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		elementInfo.isMouseOver = false;
 
 		// remove this item from the stack
-		var info = _elementInfos.pop();
+		var info = elementInfos.pop();
 
 		// restore the element's original title
 		info.element.title = info.title;
@@ -187,40 +184,43 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 
 	function printStack(operation, info) {
 		var s = info ? info.title : info;
-		log(operation + " an element titled '" + s + "' -- stack size: " + _elementInfos.length);
-		log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
+		log(operation + " an element titled '" + s + "' -- stack size: " + elementInfos.length);
+		log("stack: " + elementInfos.map(function (o) { return o.title; }).join(", "));
 	}
 
-	function processElement(element, addCallback) {
+	function processElement(element, callback) {
 
 		log("processing element: " + element.title);
 
 		// push an entry onto the stack
-		var info = new model.ElementInfo(element, element.title, true);
-		addCallback(info);
+		var info = {
+			element,
+			title,
+			isMouseOver: true
+		};
+		callback(info);
 
 		// suppress the built-in tooltip
 		element.title = "";
 
 		// handle mouseouts so we can know if the mouse leaves 
 		// the element before the popup ever appears
-		$(element).one("mouseleave", { elementInfo: info }, onMouseLeave);
+		element.addEventListener("mouseleave", e => onMouseLeave(e, info), { once: true });
 	}
 
 	// keep track of where the mouse is and show popups as needed
 	function onMouseMove(e) {
 
-		_mouseX = e.clientX;
-		_mouseY = e.clientY;
-
+		mouseX = e.clientX;
+		mouseY = e.clientY;
 
 		// don't continue unless we're on a new element
-		if (_currentElement === e.target) {
+		if (currentElement === e.target) {
 			return;
 		}
 
 		// the tooltip itself doesn't count
-		if (e.target === _$popup[0]) {
+		if (e.target === popupEl) {
 			return;
 		}
 		
@@ -231,38 +231,39 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		} 		
 
 		// we're on a new element
-		_currentElement = e.target;
+		currentElement = e.target;
 		log("------- new element --------");
 
 		// so hide the popup
-		if (_$popup.is(":visible")) {
-			_$popup.hide();
-		}
+		popupEl.style.display = "none";
 
 		// If we weren't previously over the current element, it may
 		// have a title. If so, let's process it
-		if (_currentElement.title && $(_currentElement).is(getTagSelector())) {
+		debugger;
+		if (currentElement.title && currentElement.matches(getTagSelector())) {
 
 			// handle the current element
-			processElement(_currentElement, function (info) {
-				_elementInfos.push(info);
+			processElement(currentElement, function (info) {
+				elementInfos.push(info);
 				printStack("pushed", info);
 			});
 
 			// we need to suppress tooltips for any parent elements, too
-			$(_currentElement).parents().each(function () {
-				if (this.title) {
-					processElement(this, function (info) {
-						_elementInfos.splice(0, 0, info);
-						printStack("spliced", info);
+			let element = currentElement;
+			while(element.parentNode) {
+				element = element.parentNode;
+				if (element) {
+					processElement(element, function (info) {
+						elementInfos.unshift(info);
+						printStack("unsifted", info);
 					});
 				}
-			});
+			}
 		}
 
 		// show the popup. info is at the top of the stack
-		if (_elementInfos.length > 0) {
-			showPopup(_elementInfos[_elementInfos.length - 1]);
+		if (elementInfos.length > 0) {
+			showPopup(elementInfos[elementInfos.length - 1]);
 		}
 	}
 
@@ -275,7 +276,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		injectPopup();
 
 		// show tooltips by tracking mouse movement and acting accordingly
-		$(document).mousemove(onMouseMove);
+		document.addEventListener("mousemove", onMouseMove);
 
 		var elapsed = (new Date).getTime() - start;
 		log("total initialization time: " + elapsed + " milliseconds");
