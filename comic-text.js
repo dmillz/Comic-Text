@@ -14,10 +14,10 @@ let currentElement;
 const elementInfos = [];
 
 // load the options from the back-end
-chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
+chrome.runtime.sendMessage({ method: "getOptions" }, async function (opts) {
 
 	function log(msg) {
-		console.log(msg);
+		//console.log(msg);
 	}
 
 	function getWhitelistRegexs(whitelist) {
@@ -96,11 +96,35 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		}, MOUSEOVER_DELAY);
 	}
 
-	function injectPopup() {
+	async function readConfig() {
+		// We can't use static imports in content scripts, so do it dynamically.
+		const src = chrome.runtime.getURL('config.js');
+		return (await import(src)).config;
+	}
+
+	async function injectPopup() {
+		
+		// Hacky support for dark mode.
+		// TODO: Should consider making this a user option.
+		const config = await readConfig();
+		const unmodifiedCss = config.cssVersions[config.currentCssVersion];
+		let css = opts.css;
+		if (css === unmodifiedCss &&
+			window.matchMedia && 
+			window.matchMedia('(prefers-color-scheme: dark)').matches) {
+
+			css += `
+				div.comic-text-popup {
+					background: #4E5051;
+					color: #EDEDED;
+					border: 1px solid #787979;
+				}
+			`
+		}
 
 		// inject our CSS into the page
 		const styleEl = document.createElement("style");
-		styleEl.innerHTML = opts.css;
+		styleEl.innerHTML = css;
 		document.body.appendChild(styleEl);
 
 		// inject the one-and-only popup
@@ -247,7 +271,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		log("current site is on the list!");
 
 		// inject our css & dom element into the page
-		injectPopup();
+		await injectPopup();
 
 		// show tooltips by tracking mouse movement and acting accordingly
 		document.addEventListener("mousemove", onMouseMove);

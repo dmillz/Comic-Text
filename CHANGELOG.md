@@ -7,6 +7,11 @@
 - Updated to support "manifest v3" extension requirements.
 - No more jQuery, just browser native APIs.
 
+### Added
+
+- Experimental support for dark mode. This will only take effect for users who have dark mode enabled, but have
+  not customized their CSS.
+  
 ## [2.0.0] - 2018-08-31
 
 ### Changed

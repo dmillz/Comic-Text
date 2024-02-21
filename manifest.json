@@ -12,9 +12,14 @@
             "js": [
                 "comic-text.js"
             ],
-            "run_at": "document_end"
+            "run_at": "document_end",
+            "type": "module"
         }
     ],
+    "web_accessible_resources": [{
+        "matches": ["<all_urls>"],
+        "resources": ["config.js"]
+    }],
     "options_page": "options.html",    
     "background": {
         "service_worker": "background.js",
