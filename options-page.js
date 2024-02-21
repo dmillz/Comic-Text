@@ -1,44 +1,42 @@
-$(document).ready(function () {
+import { loadCss, loadTags, loadWhitelist, resetCss, saveCss, saveTags, saveWhitelist } from "./options.js";
 
-    $("input[type=button]").button();
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
 
-    $("input[Value=Save]").click(function(e) {
-        save(e);
-    });
+async function save(e) {
+    e.preventDefault();
 
-    load();
-});
-
-function save(e) {
-    options.saveWhitelist($("#whitelist").val());
-    options.saveCss($("#css").val());
-    options.saveTags($("input:radio[name=tags]:checked").val());
+    await saveWhitelist(document.forms.optionsForm.whitelist.value);
+    await saveCss(document.forms.optionsForm.css.value);
+    await saveTags(document.forms.optionsForm.tags.value);
 
     // show a success msg
-    var $success = $("<span/>")
-        .css("color", "green")
-        .css("font-weight", "bold")
-        .html("All settings have been saved.")
-        .insertAfter($(e.target));
+    var successEl = document.createElement("span");
+    successEl.style.color = "green";
+    successEl.style.fontWeight = "bold";
+    successEl.style.marginLeft = "10px";
+    successEl.innerHTML = "✓ All settings have been saved.";
+    e.target.after(successEl);
 
     setTimeout(function() {
-        $success.fadeOut(1000);
-    }, 1000);
+        successEl.remove();
+    }, 2000);
 }
 
-function load() {
-
-    $("#whitelist").val(options.loadWhitelist());
-    $("#css").val(options.loadCss());
-    $("input[name='tags']")
-        .filter("[value=" + options.loadTags() + "]")
-        .attr("checked", "checked");
+async function load() {
+    document.forms.optionsForm.whitelist.value = await loadWhitelist();
+    document.forms.optionsForm.css.value = await loadCss();
+    document.forms.optionsForm.tags.value = await loadTags();
 }
 
-function resetCss() {
+async function confirmAndResetCss(e) {
+    e.preventDefault();
     if (confirm("If you have customized your CSS, your changes will be lost.\n\nAre you sure you want to reset the CSS?")) {
-        options.resetCss();
-        load();
-        $("#css").effect("highlight", {}, 1000);
+        await resetCss();
+        await load();
     }
 }
+
+$$("button.save").forEach(btn => btn.addEventListener("click", save));
+$("button.resetCss").addEventListener("click", confirmAndResetCss);
+await load();

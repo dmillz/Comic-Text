@@ -1,25 +1,39 @@
 // performance timer
-var start = (new Date).getTime();
+const start = (new Date).getTime();
 
 // Configuration
-var _mouseoverDelay = 100; // milliseconds
-var _fadeDuration = 140; // milliseconds
-var _offsetX = 10; // pixels from mouse
-var _offsetY = 22; // pixels from mouse
+const MOUSEOVER_DELAY = 100; // milliseconds
+const FADE_DURATION = 140; // milliseconds
+const OFFSET_X = 10; // pixels from mouse
+const OFFSET_Y = 22; // pixels from mouse
 
-// member vars
-var _mouseX;
-var _mouseY;
-
-var _$popup;
-var _elementInfos = [];
-var _currentElement;
+let mouseX;
+let mouseY;
+let popupEl;
+let currentElement;
+const elementInfos = [];
 
 // load the options from the back-end
-chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
+chrome.runtime.sendMessage({ method: "getOptions" }, async function (opts) {
+
+	function log(msg) {
+		//console.log(msg);
+	}
+
+	function getWhitelistRegexs(whitelist) {
+		// parse out the domains and turn them to regexs
+		var regexs = [];
+		var parts = whitelist.split(/\s+/);
+		for (var i = 0; i < parts.length; i++) {
+			// allow the user to simply enter "*" for all sites
+			var pattern = parts[i] === "*" ? ".*" : parts[i]; 
+			regexs.push(new RegExp(pattern));
+		}	
+		return regexs;
+	};
 
 	function isWhitelisted(url) {
-		var regexs = util.getWhitelistRegexs(opts.whitelist);
+		var regexs = getWhitelistRegexs(opts.whitelist);
 		for (var i = 0; i < regexs.length; i++) {
 			if (regexs[i].test(url)) {
 				return true;
@@ -37,115 +51,130 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 	}
 
 	function getPosition() {
-		var top = _mouseY + _offsetY;
-		var left = _mouseX + _offsetX;
+		var top = mouseY + OFFSET_Y;
+		var left = mouseX + OFFSET_X;
 
 		// reposition the popup if it runs up against the edge of the screen
-		if (left + _$popup.outerWidth() > $(window).width()) {
-			left -= (left + _$popup.outerWidth()) - $(window).width();
+		if (left + popupEl.offsetWidth > window.offsetWidth) {
+			left -= (left + popupEl.offsetWidth) - window.offsetWidth;
 		}
-		if (top + _$popup.outerHeight() > $(window).height()) {
-			top -= (top + _$popup.outerHeight()) - $(window).height();
+		if (top + popupEl.offsetHeight > window.offsetHeight) {
+			top -= (top + popupEl.offsetHeight) - window.offsetHeight;
 		}
 
-		return { top: top,
-			left: left
-		};
+		return { top, left };
 	}
+
+	function htmlEncode(text) {
+		var el = document.createElement('textarea');
+		el.innerText = text;
+		return el.innerHTML;
+	};
+
+	function prepareText(text) {
+		return htmlEncode(text)
+			.replace(/\r\n|\r|\n/g, "<br/>");;
+	};
 
 	function showPopup(info) {
 
-		var text = util.prepareText(info.title);
-		_$popup.html(text);
-		_$popup.hide();
+		var text = prepareText(info.title);
+		popupEl.innerHTML = text;
+		popupEl.style.display = "none";
 
-		util.log("starting countdown to show : " + info.title);
+		log("starting countdown to show : " + info.title);
 		setTimeout(function () {
 			if (info.isMouseOver) {
 
 				// show the popup
-				util.log("showing popup: " + info.title);
+				log("showing popup: " + info.title);
 				var position = getPosition();
-				_$popup.css({
-					"top": position.top + "px",
-					"left": position.left + "px"
-				});
-
-				_$popup.fadeIn(_fadeDuration);
+				popupEl.style.top = position.top + "px";
+				popupEl.style.left = position.left + "px";
+				popupEl.style.display = "inline-block";
 			}
-		}, _mouseoverDelay);
+		}, MOUSEOVER_DELAY);
 	}
 
-	function injectPopup() {
+	async function readConfig() {
+		// We can't use static imports in content scripts, so do it dynamically.
+		const src = chrome.runtime.getURL('config.js');
+		return (await import(src)).config;
+	}
+
+	async function injectPopup() {
+		
+		// Hacky support for dark mode.
+		// TODO: Should consider making this a user option.
+		const config = await readConfig();
+		const unmodifiedCss = config.cssVersions[config.currentCssVersion];
+		let css = opts.css;
+		if (css === unmodifiedCss &&
+			window.matchMedia && 
+			window.matchMedia('(prefers-color-scheme: dark)').matches) {
+
+			css += `
+				div.comic-text-popup {
+					background: #4E5051;
+					color: #EDEDED;
+					border: 1px solid #787979;
+				}
+			`
+		}
 
 		// inject our CSS into the page
-		$("<style/>")
-			.attr("type", "text/css")
-			.html(opts.css)
-			.appendTo($("body"));
+		const styleEl = document.createElement("style");
+		styleEl.innerHTML = css;
+		document.body.appendChild(styleEl);
 
 		// inject the one-and-only popup
-		_$popup = $("<div/>")
-						.addClass("comic-text-popup")
-						.css({
-							"position": "fixed",
-							"display": "none",
-							"z-index": "99999999"
-						})
-						.appendTo("body");
+		popupEl = document.createElement("div");
+		popupEl.classList.add("comic-text-popup");
+		popupEl.style.position = "fixed";
+		popupEl.style.display = "none";
+		popupEl.style.zIndex = "99999999";
+		document.body.appendChild(popupEl);
 						
 						
 		// dismiss the popup on right click
-		var cancelNext = false;
-		_$popup.mousedown(function(e) {
+		popupEl.addEventListener("mousedown", function(e) {
 			
-			util.log("popup was clicked, button #: " + e.which);
+			log("popup was clicked, button #: " + e.button);
 			
-			if (e.which != 3) { // right click only
+			if (e.button != 2) { // right click only
 				return;
 			}
 			
+			// suppress the context menu
+			e.preventDefault();
+
 			// hide it
-			if (_$popup.is(":visible")) {
-				_$popup.hide();
-			}
-			
-			// set the flag to cancel the next context menu
-			cancelNext = true;
-		});
-		
-		// cancel the context menu if the popup was just dismissed
-		$(document).bind("contextmenu",function(e){
-			if (cancelNext) {
-				cancelNext = false;
-				return false;
-			}
+			popupEl.style.display = "none";
 		});
 	}
-
-	function onMouseLeave(e) {
+		
+	function onMouseLeave(e, elementInfo) {
 
 		// if we moused into the popup, rebind the mouseleave handler to the popup
-		if (e.relatedTarget === _$popup[0]) {
-			util.log("rebinding mouseleave to popup");
-			_$popup.one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+		if (e.relatedTarget === popupEl) {
+			log("rebinding mouseleave to popup");
+			popupEl.addEventListener("mouseleave", e => onMouseLeave(e, elementInfo), { once: true });
 			return;
 		}
 
 		// if we moused from the popup into the current element, rebind to the element
-		if (e.relatedTarget === _currentElement) {
-			util.log("rebinding mouseleave to original element");
-			$(_currentElement).one("mouseleave", { elementInfo: e.data.elementInfo }, onMouseLeave);
+		if (e.relatedTarget === currentElement) {
+			log("rebinding mouseleave to original element");
+			currentElement.addEventListener("mouseleave", e => onMouseLeave(e, elementInfo), { once: true });
 			return;
 		}
 
 		// mark the element as not having the mouse over it
-		var elementInfo = e.data.elementInfo;
-		util.log("marking as !isMouseOver: " + elementInfo.title);
+		log("marking as !isMouseOver: " + elementInfo.title);
 		elementInfo.isMouseOver = false;
 
 		// remove this item from the stack
-		var info = _elementInfos.pop();
+		var info = elementInfos.pop();
 
 		// restore the element's original title
 		info.element.title = info.title;
@@ -154,40 +183,43 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 
 	function printStack(operation, info) {
 		var s = info ? info.title : info;
-		util.log(operation + " an element titled '" + s + "' -- stack size: " + _elementInfos.length);
-		util.log("stack: " + _elementInfos.map(function (o) { return o.title; }).join(", "));
+		log(operation + " an element titled '" + s + "' -- stack size: " + elementInfos.length);
+		log("stack: " + elementInfos.map(function (o) { return o.title; }).join(", "));
 	}
 
-	function processElement(element, addCallback) {
+	function processElement(element, callback) {
 
-		util.log("processing element: " + element.title);
+		log("processing element: " + element.title);
 
 		// push an entry onto the stack
-		var info = new model.ElementInfo(element, element.title, true);
-		addCallback(info);
+		var info = {
+			element,
+			title: element.title,
+			isMouseOver: true
+		};
+		callback(info);
 
 		// suppress the built-in tooltip
 		element.title = "";
 
 		// handle mouseouts so we can know if the mouse leaves 
 		// the element before the popup ever appears
-		$(element).one("mouseleave", { elementInfo: info }, onMouseLeave);
+		element.addEventListener("mouseleave", e => onMouseLeave(e, info), { once: true });
 	}
 
 	// keep track of where the mouse is and show popups as needed
 	function onMouseMove(e) {
 
-		_mouseX = e.clientX;
-		_mouseY = e.clientY;
-
+		mouseX = e.clientX;
+		mouseY = e.clientY;
 
 		// don't continue unless we're on a new element
-		if (_currentElement === e.target) {
+		if (currentElement === e.target) {
 			return;
 		}
 
 		// the tooltip itself doesn't count
-		if (e.target === _$popup[0]) {
+		if (e.target === popupEl) {
 			return;
 		}
 		
@@ -198,53 +230,53 @@ chrome.extension.sendRequest({ method: "getOptions" }, function (opts) {
 		} 		
 
 		// we're on a new element
-		_currentElement = e.target;
-		util.log("------- new element --------");
+		currentElement = e.target;
+		log("------- new element --------");
 
 		// so hide the popup
-		if (_$popup.is(":visible")) {
-			_$popup.hide();
-		}
+		popupEl.style.display = "none";
 
 		// If we weren't previously over the current element, it may
 		// have a title. If so, let's process it
-		if (_currentElement.title && $(_currentElement).is(getTagSelector())) {
+		if (currentElement.title && currentElement.matches(getTagSelector())) {
 
 			// handle the current element
-			processElement(_currentElement, function (info) {
-				_elementInfos.push(info);
+			processElement(currentElement, function (info) {
+				elementInfos.push(info);
 				printStack("pushed", info);
 			});
 
 			// we need to suppress tooltips for any parent elements, too
-			$(_currentElement).parents().each(function () {
-				if (this.title) {
-					processElement(this, function (info) {
-						_elementInfos.splice(0, 0, info);
-						printStack("spliced", info);
+			let element = currentElement;
+			while(element.parentNode) {
+				element = element.parentNode;
+				if (element.title && !!element.tagName) {
+					processElement(element, function (info) {
+						elementInfos.unshift(info);
+						printStack("unsifted", info);
 					});
 				}
-			});
+			}
 		}
 
 		// show the popup. info is at the top of the stack
-		if (_elementInfos.length > 0) {
-			showPopup(_elementInfos[_elementInfos.length - 1]);
+		if (elementInfos.length > 0) {
+			showPopup(elementInfos[elementInfos.length - 1]);
 		}
 	}
 
 	// initialize everything
 	if (isWhitelisted(window.location.host)) {
 
-		util.log("current site is on the list!");
+		log("current site is on the list!");
 
 		// inject our css & dom element into the page
-		injectPopup();
+		await injectPopup();
 
 		// show tooltips by tracking mouse movement and acting accordingly
-		$(document).mousemove(onMouseMove);
+		document.addEventListener("mousemove", onMouseMove);
 
 		var elapsed = (new Date).getTime() - start;
-		util.log("total initialization time: " + elapsed + " milliseconds");
+		log("total initialization time: " + elapsed + " milliseconds");
 	}
 });

@@ -1,17 +1,21 @@
+import { getOptions } from "./options.js";
+import { updateCssVersion } from "./util.js";
+
 // upgrade the CSS saved in local storage, if necessary
-util.updateCssVersion();
+updateCssVersion();
 
 // handle messages from the front-end
-chrome.extension.onRequest.addListener(
-    function(request, sender, sendResponse) {
-
-        switch(request.method) {
+chrome.runtime.onMessage.addListener(
+    function(message, sender, sendResponse) {        
+        switch(message.method) {
             case "getOptions":
-                sendResponse(options.getOptions());
-                break;
+                getOptions().then(options => {
+                    sendResponse(options)
+                });
+                return true;
 
             default:
-                throw "Did not recognize the requested method: " + request.type;
+                throw new Error("Did not recognize the requested method: " + message.method);
         }
     }
 );

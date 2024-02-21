@@ -1,67 +1,60 @@
-// namespace options
-var options = options || {};
+import { config } from "./config.js";
 
-(function() {
-
-	function loadOption(name, defaultValue) {
-		var option = localStorage[name];
-		if (option == null) {
-			// load default
-			option = defaultValue;
-			localStorage[name] = option;
-		}
-		return option;
-	}	
-
-	function saveOption(name, value) {
-		localStorage[name] = value;
+async function loadOption(name, defaultValue) {
+	var option = (await chrome.storage.sync.get(name))[name];
+	if (option == null) {
+		// load default
+		option = defaultValue;
+		await chrome.storage.sync.set({ [name]: option });
 	}
+	return option;
+}	
+
+async function saveOption(name, value) {
+	await chrome.storage.sync.set({ [name]: value });
+}
 	
-	// tags
-	options.saveTags = function(tags) {
-		saveOption("tags", tags);
-	};
-	options.loadTags = function() {
-		return loadOption("tags", config.defaultTags);
-	}		;
+// tags
+export const saveTags = async function(tags) {
+	await saveOption("tags", tags);
+};
+export const loadTags = async function() {
+	return await loadOption("tags", config.defaultTags);
+}
 
-	// whitelist
-	options.saveWhitelist = function(whitelist) {
-		saveOption("whitelist", whitelist);
-	};
-	options.loadWhitelist = function() {
-		return loadOption("whitelist", config.defaultWhitelist);
-	};
+// whitelist
+export const saveWhitelist = async function(whitelist) {
+	await saveOption("whitelist", whitelist);
+};
+export const loadWhitelist = async function() {
+	return await loadOption("whitelist", config.defaultWhitelist);
+};
 
-	// css 
-	options.saveCss = function(css) {
-		saveOption("css", css);
-	};
-	options.loadCss = function() {
-		return loadOption("css", config.cssVersions[config.currentCssVersion]);		
-	};
+// css 
+export const saveCss = async function(css) {
+	await saveOption("css", css);
+};
+export const loadCss = async function() {
+	return await loadOption("css", config.cssVersions[config.currentCssVersion]);		
+};
 
-	options.resetCss = function() {
-		options.saveCss(config.cssVersions[config.currentCssVersion]);
-	};
+export const resetCss = async function() {
+	await saveCss(config.cssVersions[config.currentCssVersion]);
+};
 
-	// css version
-	options.loadUserCssVersion = function() {
-		return parseInt(localStorage["userCssVersion"]);	
-	};
-	options.saveUserCssVersion = function(version) {
-		localStorage["userCssVersion"] = ""+version;
-	};
+// css version
+export const loadUserCssVersion = async function() {
+	return parseInt((await chrome.storage.sync.get("userCssVersion")).userCssVersion);	
+};
+export const saveUserCssVersion = async function(version) {
+	await saveOption("userCssVersion", ""+version);
+};
 
-	// class OptionsContainer
-	function OptionsContainer() {
-		this.whitelist = options.loadWhitelist();
-		this.css = options.loadCss();
-		this.userCssVersion = options.loadUserCssVersion();
-		this.tags = options.loadTags();
-	}
-
-	options.getOptions = function() {
-		return new OptionsContainer();
-	}
-})();
+export const getOptions = async function() {
+	return {
+		whitelist: await loadWhitelist(),
+		css: await loadCss(),
+		userCssVersion: await loadUserCssVersion(),
+		tags: await loadTags()
+	};
+};

@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head><title>dynamic style</title></head>
-<script type="text/javascript" src="../jquery-1.6.2.min.js"></script>
 <body>
 
-<script>
-	
-	$(document).ready(function() { 
-		
-		var total = 20;
+<style>
+	span
+	{
+		display: inline-block;
+		width: 100px;
+		height: 100px;
+		background: #f0f0f0;
+		border: 1px solid #ccc;
+		margin: 10px;
+		text-align: center;
+		line-height: 100px;
+	}
+</style>
 
-		for (var i = 0; i < total; i++)
-		{
-			var text = "element #" + (i + 1);
-			$("<span/>")
-				.text(text)
-				.attr("title", text)
-				.appendTo("body");
-		}
-
-	});
+<script>	
+	const total = 20;
+	for (let i = 0; i < total; i++)
+	{
+		const text = "element #" + (i + 1);
+		const el = document.createElement("span");
+		el.innerText = text;
+		el.setAttribute("title", text);
+		document.body.appendChild(el);
+	}
 </script>
 
 </body>
