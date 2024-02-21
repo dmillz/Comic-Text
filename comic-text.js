@@ -17,7 +17,7 @@ const elementInfos = [];
 chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 
 	function log(msg) {
-		//console.log(msg);
+		console.log(msg);
 	}
 
 	function getWhitelistRegexs(whitelist) {
@@ -89,12 +89,9 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 				// show the popup
 				log("showing popup: " + info.title);
 				var position = getPosition();
-				popupEl.css({
-					"top": position.top + "px",
-					"left": position.left + "px"
-				});
-
-				popupEl.fadeIn(FADE_DURATION);
+				popupEl.style.top = position.top + "px";
+				popupEl.style.left = position.left + "px";
+				popupEl.style.display = "inline-block";
 			}
 		}, MOUSEOVER_DELAY);
 	}
@@ -128,10 +125,9 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 			e.preventDefault();
 
 			// hide it
-			if (popupEl.is(":visible")) {
-				popupEl.hide();
-			}
+			popupEl.style.display = "none";
 		});
+	}
 		
 	function onMouseLeave(e, elementInfo) {
 
@@ -150,7 +146,6 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		}
 
 		// mark the element as not having the mouse over it
-		var elementInfo = e.data.elementInfo;
 		log("marking as !isMouseOver: " + elementInfo.title);
 		elementInfo.isMouseOver = false;
 
@@ -175,7 +170,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 		// push an entry onto the stack
 		var info = {
 			element,
-			title,
+			title: element.title,
 			isMouseOver: true
 		};
 		callback(info);
@@ -219,7 +214,6 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 
 		// If we weren't previously over the current element, it may
 		// have a title. If so, let's process it
-		debugger;
 		if (currentElement.title && currentElement.matches(getTagSelector())) {
 
 			// handle the current element
@@ -232,7 +226,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (opts) {
 			let element = currentElement;
 			while(element.parentNode) {
 				element = element.parentNode;
-				if (element) {
+				if (element.title && !!element.tagName) {
 					processElement(element, function (info) {
 						elementInfos.unshift(info);
 						printStack("unsifted", info);

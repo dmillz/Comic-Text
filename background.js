@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(
                 return true;
 
             default:
-                throw "Did not recognize the requested method: " + message.method;
+                throw new Error("Did not recognize the requested method: " + message.method);
         }
     }
 );
