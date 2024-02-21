@@ -8,23 +8,36 @@ Comic Text
 
 What is Comic Text?
 -------------------
-Comic Text is a Chrome extension that replaces the built-in Chrome tooltip to enable easier reading of the title-text for popular web comics, such as xkcd.
+Comic Text is a Chrome extension that replaces the built-in Chrome tooltip to enable easier reading 
+of the title-text for popular web comics, such as xkcd.
 
 ### Get it for free from the [Chrome Web Store](https://chrome.google.com/webstore/detail/hfpglafkfedcnnojpioconphfcelcljj)
 
-New! Comic Text is now capable of scanning the entire page and replacing tooltips for *any* page element, not just images. Turn on the option by accessing the Comic Text extension options ([Wrench Icon] > Tools > Extensions, and then find the "Options" link under the Comic Text extension.)
+New! Comic Text is now capable of scanning the entire page and replacing tooltips for *any* page element, 
+not just images. Turn on the option by accessing the Comic Text extension options.
 
 What's wrong with Chrome's mouseover text tooltips?
 ---------------------------------------------------
-They don't last long enough to read the entirety of the mouseover title text on many popular web comics, such as [xkcd](xkcd.com). [Other people](http://www.google.com/support/forum/p/Chrome/thread?tid=4f641efdaeb3c585) have also [been annoyed by this behavior](http://code.google.com/p/chromium/issues/detail?id=1441). By default, Chrome's tooltips disappear after about 5 seconds; but with Comic Text installed, they will last as long as your mouse remains over the image. 
+In years past, Chrome's title text tooltips didn't last long enough to read the entirety of the mouseover 
+title text on many popular web comics, such as [xkcd](xkcd.com). By default, Chrome's tooltips disappeared
+after about 5 seconds; but with Comic Text installed, they will last as long as your mouse remains over the image. 
+
+Chrome's default [tooltip behavior was fixed in 2014](https://issues.chromium.org/issues/40266368), but this
+extension still improves tooltip behavior and enables customization of the appearance of the tooltip text for
+improved accessibility.
+
 
 Does this extension work on websites other than xkcd.com?
 ---------------------------------------------------------
-Yes! By default, the Comic Text will "just work" when browsing xkcd.com, and you may use the extension options to customize the styling of the popup, or to enable Comic Text on your other favorite sites. (Access the extension options by clicking [Wrench Icon] > Tools > Extensions, and then find the "Options" link under the Comic Text extension.)
+Yes! By default, the Comic Text will "just work" when browsing xkcd.com, and you may use the extension options
+to customize the styling of the popup, or to enable Comic Text on your other favorite sites. 
+
+Access the extension options by clicking [Puzzle Piece Icon] > Comic Text [3-dot menu] > Options)
 
 Why does the extension require permission to access "Your data on all websites"?
 --------------------------------------------------------------------------------
-The extension works by modifying the HTML/CSS of any pages that are on the whitelist. On image mouseover, the script removes any existing title text of the image in order to suppress the built-in tooltips, and then pops-up a new DOM element, cleverly styled to mimic the default Chrome tooltip.
+The extension works by modifying the HTML/CSS of any pages that are on the whitelist. On image mouseover, the 
+script removes any existing title text of the image in order to suppress the built-in tooltips, and then pops-up a new DOM element, cleverly styled to mimic the default Chrome tooltip.
 
 The extension requires the "Your data on all websites" persmission so that it can modify the page you're browsing in this manner, but that's the only thing it does. It does not save any information (besides it's own options), nor does it communicate with the outside world. 
 
