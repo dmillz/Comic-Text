@@ -1,6 +1,6 @@
 export const config = {
 	// debug mode
-	isDebug: true,
+	isDebug: false,
 
 	// default list of html elements (* for all)
 	defaultTags: "img",

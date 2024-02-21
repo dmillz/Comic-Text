@@ -10,7 +10,6 @@ chrome.runtime.onMessage.addListener(
         switch(message.method) {
             case "getOptions":
                 getOptions().then(options => {
-                    console.log("options", options); 
                     sendResponse(options)
                 });
                 return true;
